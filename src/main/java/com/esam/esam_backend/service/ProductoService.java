@@ -14,6 +14,12 @@ public class ProductoService {
     @Autowired
     private ProductoRepository pRepo;
 
+
+    // Obtener todos los productos
+    public List<Producto> obteneProductos(){
+        return pRepo.findAll();
+    }
+
     // Obtener según su id
     public Producto obtenerPorId(Long sku) {
         return pRepo.findById(sku)

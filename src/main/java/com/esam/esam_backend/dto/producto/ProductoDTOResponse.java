@@ -13,4 +13,5 @@ public class ProductoDTOResponse {
     private String marca;
     private Long precio;
     private Long stock;
+    private String img;
 }

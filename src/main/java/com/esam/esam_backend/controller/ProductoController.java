@@ -27,6 +27,12 @@ public class ProductoController {
 
     private final ProductoMapper productoMapper = new ProductoMapper();
 
+    // Obtener todos los productos
+    @GetMapping()
+    public List<ProductoDTOResponse> obtenerProductos(){
+        return productoMapper.toDTOList(productoService.obteneProductos());
+    }
+    
     // Obtener un producto por su sku
     @GetMapping("/{sku}")
     public ProductoDTOResponse obtenerPorId(@PathVariable Long sku) {

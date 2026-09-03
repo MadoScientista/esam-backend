@@ -13,9 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.dto.producto.ProductoDTOResponse;
+import com.esam.esam_backend.mapper.ProductoDTORequestMapper;
 import com.esam.esam_backend.mapper.ProductoMapper;
-import com.esam.esam_backend.model.Producto;
 import com.esam.esam_backend.service.ProductoService;
 
 @RestController
@@ -26,6 +27,9 @@ public class ProductoController {
     private ProductoService productoService;
 
     private final ProductoMapper productoMapper = new ProductoMapper();
+
+    @Autowired
+    private ProductoDTORequestMapper productoDTORequestMapper;
 
     // Obtener todos los productos
     @GetMapping()
@@ -65,14 +69,14 @@ public class ProductoController {
 
     // Guardar un producto
     @PostMapping
-    public ProductoDTOResponse guardar(@RequestBody Producto producto) {
-        return productoMapper.toDTO(productoService.guardar(producto));
+    public ProductoDTOResponse guardar(@RequestBody ProductoDTORequest dto) {
+        return productoMapper.toDTO(productoService.guardar(productoDTORequestMapper.toEntity(dto)));
     }
 
     // Editar un producto
     @PutMapping("/{sku}")
-    public ProductoDTOResponse editar(@PathVariable Long sku, @RequestBody Producto producto) {
-        return productoMapper.toDTO(productoService.editar(sku, producto));
+    public ProductoDTOResponse editar(@PathVariable Long sku, @RequestBody ProductoDTORequest dto) {
+        return productoMapper.toDTO(productoService.editar(sku, dto));
     }
 
     // Setear stock a un valor específico

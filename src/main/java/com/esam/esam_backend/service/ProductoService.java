@@ -5,6 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.esam.esam_backend.dto.producto.ProductoDTORequest;
+import com.esam.esam_backend.mapper.ProductoDTORequestMapper;
+import com.esam.esam_backend.model.Marca;
 import com.esam.esam_backend.model.Producto;
 import com.esam.esam_backend.repository.ProductoRepository;
 
@@ -13,6 +16,9 @@ public class ProductoService {
 
     @Autowired
     private ProductoRepository pRepo;
+
+    @Autowired
+    private ProductoDTORequestMapper productoDTORequestMapper;
 
 
     // Obtener todos los productos
@@ -52,12 +58,15 @@ public class ProductoService {
     }
 
     // Editar
-    public Producto editar(Long sku, Producto datos) {
+    public Producto editar(Long sku, ProductoDTORequest datos) {
         Producto producto = obtenerPorId(sku);
         producto.setNombre(datos.getNombre());
+        producto.setDescripcion(datos.getDescripcion());
         producto.setPrecio(datos.getPrecio());
         producto.setStock(datos.getStock());
-        producto.setMarca(datos.getMarca());
+        producto.setImg(datos.getImg());
+        Marca marca = productoDTORequestMapper.resolverMarcaParaEdicion(datos.getIdMarca(), producto);
+        producto.setMarca(marca);
         return pRepo.save(producto);
     }
 

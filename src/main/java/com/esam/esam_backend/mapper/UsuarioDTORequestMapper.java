@@ -10,8 +10,7 @@ public class UsuarioDTORequestMapper {
 
     public Usuario toEntity(UsuarioDTORequest dto, RolUsuario rol, Region region, Comuna comuna) {
         Usuario usuario = new Usuario();
-        usuario.setPNombre(dto.getPNombre());
-        usuario.setSNombre(dto.getSNombre());
+        usuario.setNombres(dto.getNombres());
         usuario.setAPaterno(dto.getAPaterno());
         usuario.setAMaterno(dto.getAMaterno());
         usuario.setNombreUsuario(dto.getNombreUsuario());
@@ -24,8 +23,7 @@ public class UsuarioDTORequestMapper {
 
     public UsuarioDTORequest toDTO(Usuario usuario) {
         UsuarioDTORequest dto = new UsuarioDTORequest();
-        dto.setPNombre(usuario.getPNombre());
-        dto.setSNombre(usuario.getSNombre());
+        dto.setNombres(usuario.getNombres());
         dto.setAPaterno(usuario.getAPaterno());
         dto.setAMaterno(usuario.getAMaterno());
         dto.setNombreUsuario(usuario.getNombreUsuario());

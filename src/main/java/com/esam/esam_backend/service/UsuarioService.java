@@ -38,8 +38,7 @@ public class UsuarioService {
     // Editar usuario
     public Usuario editar(Long id, Usuario datos) {
         Usuario usuario = obtenerPorId(id);
-        usuario.setPNombre(datos.getPNombre());
-        usuario.setSNombre(datos.getSNombre());
+        usuario.setNombres(datos.getNombres());
         usuario.setAPaterno(datos.getAPaterno());
         usuario.setAMaterno(datos.getAMaterno());
         usuario.setNombreUsuario(datos.getNombreUsuario());

@@ -11,10 +11,12 @@ public class UsuarioMapper {
     public UsuarioDTOResponse toDTO(Usuario usuario) {
         UsuarioDTOResponse dto = new UsuarioDTOResponse();
         dto.setId(usuario.getIdUsuario());
-        dto.setPNombre(usuario.getPNombre());
-        dto.setSNombre(usuario.getSNombre());
+        dto.setNombres(usuario.getNombres());
         dto.setAPaterno(usuario.getAPaterno());
         dto.setAMaterno(usuario.getAMaterno());
+        dto.setCorreo(usuario.getCorreo());
+        dto.setRegion(usuario.getRegion().getNombre());
+        dto.setComuna(usuario.getComuna().getNombre());
         dto.setRol(usuario.getRolUsuario().getNombre());
         dto.setNombreUsuario(usuario.getNombreUsuario());
         return dto;

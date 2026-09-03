@@ -8,10 +8,12 @@ import lombok.NoArgsConstructor;
 public class UsuarioDTOResponse {
 
     private Long id;
-    private String pNombre;
-    private String sNombre;
+    private String nombres;
     private String aPaterno;
     private String aMaterno;
+    private String correo;
+    private String region;
+    private String comuna;
     private String rol;
     private String nombreUsuario;
 }

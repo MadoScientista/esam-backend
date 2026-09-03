@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UsuarioDTORequest {
 
-    private String pNombre;
-    private String sNombre;
+    private String nombres;
     private String aPaterno;
     private String aMaterno;
     private String nombreUsuario;

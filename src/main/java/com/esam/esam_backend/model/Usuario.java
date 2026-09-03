@@ -17,12 +17,13 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idUsuario;
-    private String pNombre;
-    private String sNombre;
+    private String nombres;
     private String aPaterno;
     private String aMaterno;
 
+    private String telefono;
     private String nombreUsuario;
+    private String correo;
     private String password;
 
     // Muchos usuarios pueden tener un rol

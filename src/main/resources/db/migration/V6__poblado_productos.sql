@@ -48,7 +48,7 @@ VALUES
     'Carpeta plástica colgante tamaño oficio con sistema Slide para organizar documentos.',
     890,
     40,
-    'https://mimbralb2c.vtexassets.com/arquivos/ids/246992/031028114.jpg',
+    'https://www.torre.cl/wp-content/uploads/2023/01/11576-1-1024x1024.jpg',
     1
 ),
 (

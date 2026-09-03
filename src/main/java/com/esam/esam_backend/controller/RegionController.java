@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.esam.esam_backend.dto.region.RegionComunasDTO;
 import com.esam.esam_backend.model.Region;
 import com.esam.esam_backend.service.RegionService;
 
@@ -32,6 +33,18 @@ public class RegionController {
     @GetMapping
     public List<Region> obtenerTodos() {
         return regionService.obtenerTodos();
+    }
+
+    // Obtener todas las regiones con sus comunas
+    @GetMapping("/comunas")
+    public List<RegionComunasDTO> obtenerTodasConComunas() {
+        return regionService.obtenerTodasConComunas();
+    }
+
+    // Obtener una región con sus comunas
+    @GetMapping("/{id}/comunas")
+    public RegionComunasDTO obtenerPorIdConComunas(@PathVariable Long id) {
+        return regionService.obtenerPorIdConComunas(id);
     }
 
     // Guardar una región

@@ -1,303 +1,184 @@
-# ESAM Backend
+# ESAM - Tienda Escolar en Línea (Backend)
 
-API RESTful para la gestion de productos, usuarios y datos geograficos de una tienda en linea.
+Backend de una tienda en línea de artículos escolares y de oficina. Se encarga de
+gestionar **usuarios**, **roles**, **regiones y comunas**, **marcas**, **productos**
+y su **stock**.
 
-## Stack Tecnologico
+## ¿Qué hace la aplicación?
+
+- Permite registrar e iniciar sesión como **administrador**, **vendedor** o **cliente**.
+- Administra el catálogo de productos: crear, editar, eliminar, buscar por nombre,
+  marca, precio o stock, y controlar el stock (aumentar, disminuir o fijar un valor).
+- Entrega el listado de regiones y comunas de Chile, útil para completar el
+  domicilio de los usuarios.
+- Al iniciar por primera vez, crea la base de datos, las tablas y **datos de ejemplo**
+  (16 regiones, comunas, roles, marcas y productos) de forma automática.
+
+## Tecnologías
 
 - **Java 26** con **Spring Boot 4.1.1**
-- **Spring Data JPA** (Hibernate)
-- **MySQL** como base de datos
-- **Flyway** para migraciones de BD
-- **Lombok** para reduccion de boilerplate
-- **Spring Boot Actuator** para monitoreo
+- **Spring Data JPA** (Hibernate) y **MySQL** como base de datos
+- **Flyway** para crear y actualizar la base de datos automáticamente
+- **Lombok** y **Spring Boot Actuator**
 
-## Inicio Rápido
+## Puesta en marcha
 
-### Prerequisitos
+### 1. Requisitos
 
 - Java 26
-- MySQL 8+
-- Maven
+- MySQL 8 o superior
+- Maven (incluido en el proyecto, igual se puede usar `mvnw`)
 
-### Configuracion
+### 2. Crear la base de datos y el usuario (una sola vez)
 
-La aplicacion se ejecuta en el puerto **8087** y se conecta a MySQL en `localhost:3306/esam_db`.
+Ejecuta en MySQL el script incluido en el proyecto:
+
+```
+src/main/resources/db/creacion_admin.sql
+```
+
+Este script crea la base `esam_db` y el usuario `admin_esam_db` (clave `1234`)
+que la aplicación usa para conectarse.
+
+### 3. Iniciar la aplicación
 
 ```bash
-# Compilar el proyecto
 ./mvnw clean compile
-
-# Ejecutar
 ./mvnw spring-boot:run
 ```
 
-La base de datos `esam_db` se crea automaticamente si no existe. Las migraciones de Flyway se ejecutan al iniciar.
+La aplicación queda disponible en **http://localhost:8080**. La base de datos se
+crea y se llena sola en el primer inicio (no hace falta hacer nada más).
 
-## Modelos de Datos
+### 4. Cuentas de acceso de ejemplo
 
-| Modelo          | Descripcion                              | Campo Clave |
-|-----------------|------------------------------------------|-------------|
-| `Usuario`       | Usuarios del sistema                     | `idUsuario` |
-| `RolUsuario`    | Roles de usuario                         | `idRolUsuario` |
-| `Region`        | Regiones geograficas                     | `idRegion`  |
-| `Comuna`        | Comunas dentro de una region             | `idComuna`  |
-| `Marca`         | Marcas de productos                      | `idMarca`   |
-| `Producto`      | Productos de la tienda                   | `sku`       |
+| Rol       | Usuario                    | Contraseña    |
+|-----------|----------------------------|---------------|
+| Admin     | `admin@duoc.cl`            | `admin123`    |
+| Vendedor  | `vendedores@gmail.cl`      | `vendedor123` |
+| Cliente   | `cliente@duoc.com`         | `cliente123`  |
 
-### Relaciones
-
-- `RolUsuario` 1 — N `Usuario`
-- `Region` 1 — N `Comuna`
-- `Region` 1 — N `Usuario`
-- `Comuna` 1 — N `Usuario`
-- `Marca` 1 — N `Producto`
-
-> Cada `Usuario` pertenece a un `RolUsuario`, a una `Comuna` y a una `Region`.
-
----
-
-## Endpoints
+## Uso de la API
 
 ### Usuarios - `/api/usuarios`
 
-> Los endpoints de consulta y mutacion de usuarios devuelven un `UsuarioDTOResponse`
-> donde `rol` es el **nombre** del rol (no el `idRolUsuario`).
+| Método | Endpoint                 | Descripción                        |
+|--------|--------------------------|------------------------------------|
+| GET    | `/api/usuarios`          | Listar todos los usuarios          |
+| GET    | `/api/usuarios/{id}`     | Obtener un usuario por su ID       |
+| GET    | `/api/usuarios/rol/{idRolUsuario}` | Listar usuarios por rol    |
+| POST   | `/api/usuarios/login`    | Iniciar sesión (nombreUsuario y password) |
+| POST   | `/api/usuarios`          | Crear un usuario                   |
+| POST   | `/api/usuarios/{id}`     | Editar un usuario                  |
+| DELETE | `/api/usuarios/{id}`     | Eliminar un usuario                |
 
-| Metodo   | Endpoint                      | Descripcion                     | Body / Params                       |
-|----------|-------------------------------|---------------------------------|-------------------------------------|
-| `GET`    | `/api/usuarios`               | Obtener todos los usuarios      | —                                   |
-| `GET`    | `/api/usuarios/{id}`          | Obtener un usuario por ID       | —                                   |
-| `GET`    | `/api/usuarios/rol/{idRolUsuario}` | Obtener usuarios por rol   | —                                   |
-| `POST`   | `/api/usuarios/login`         | Confirmar login                 | `UsuarioDTOLogin` JSON              |
-| `POST`   | `/api/usuarios`               | Crear un usuario                | `Usuario` JSON                      |
-| `PUT`    | `/api/usuarios/{id}`          | Editar un usuario               | `Usuario` JSON                      |
-| `DELETE` | `/api/usuarios/{id}`          | Eliminar un usuario             | —                                   |
+**Datos para crear o editar un usuario:**
 
-**Body `Usuario` (entrada):**
 ```json
 {
-  "pNombre": "string",
-  "sNombre": "string",
+  "nombres": "string",
   "aPaterno": "string",
   "aMaterno": "string",
+  "rut": 12345678,
+  "dv": "K",
+  "fechaNacimiento": "2000-01-01",
+  "direccion": "string",
+  "telefono": 56912345678,
   "nombreUsuario": "string",
+  "correo": "string",
   "password": "string",
-  "rolUsuario": { "idRolUsuario": 1 },
-  "comuna": { "idComuna": 1 },
-  "region": { "idRegion": 1 }
+  "idRolUsuario": 1,
+  "idRegion": 7,
+  "idComuna": 104
 }
 ```
 
-**Body `UsuarioDTOLogin`:**
+**Respuesta del login:**
+
 ```json
 {
-  "nombreUsuario": "string",
-  "password": "string"
+  "loggin": true,
+  "usuario": { "id": 1, "nombres": "Carlos", "...": "..." }
 }
 ```
-
-**Respuesta `UsuarioDTOLoginResponse` (login):**
-```json
-{
-  "loggin": true
-}
-```
-
-**Respuesta `UsuarioDTOResponse`:**
-```json
-{
-  "id": 1,
-  "pNombre": "string",
-  "sNombre": "string",
-  "aPaterno": "string",
-  "aMaterno": "string",
-  "rol": "Nombre del rol",
-  "nombreUsuario": "string"
-}
-```
-
----
 
 ### Roles - `/api/roles`
 
-| Metodo   | Endpoint              | Descripcion              | Body / Params      |
-|----------|-----------------------|--------------------------|--------------------|
-| `GET`    | `/api/roles`          | Obtener todos los roles  | —                  |
-| `GET`    | `/api/roles/{id}`     | Obtener un rol por ID    | —                  |
-| `POST`   | `/api/roles`          | Crear un rol             | `RolUsuario` JSON  |
-| `PUT`    | `/api/roles/{id}`     | Editar un rol            | `RolUsuario` JSON  |
-| `DELETE` | `/api/roles/{id}`     | Eliminar un rol          | —                  |
+| Método | Endpoint           | Descripción             |
+|--------|--------------------|-------------------------|
+| GET    | `/api/roles`       | Listar roles            |
+| GET    | `/api/roles/{id}`  | Obtener un rol por ID   |
+| POST   | `/api/roles`       | Crear un rol            |
+| PUT    | `/api/roles/{id}`  | Editar un rol           |
+| DELETE | `/api/roles/{id}`  | Eliminar un rol         |
 
-**Body `RolUsuario`:**
-```json
-{
-  "nombre": "string"
-}
-```
+### Regiones y comunas
 
----
+| Método | Endpoint                   | Descripción                              |
+|--------|----------------------------|------------------------------------------|
+| GET    | `/api/regiones`            | Listar regiones                          |
+| GET    | `/api/regiones/{id}`       | Obtener una región por ID                |
+| GET    | `/api/regiones/comunas`    | Listar regiones con sus comunas          |
+| GET    | `/api/regiones/{id}/comunas` | Obtener una región con sus comunas     |
+| GET    | `/api/comunas`             | Listar comunas                           |
+| GET    | `/api/comunas/{id}`        | Obtener una comuna por ID                |
 
-### Regiones - `/api/regiones`
-
-| Metodo   | Endpoint               | Descripcion               | Body / Params    |
-|----------|------------------------|---------------------------|------------------|
-| `GET`    | `/api/regiones`        | Obtener todas las regiones| —                |
-| `GET`    | `/api/regiones/{id}`   | Obtener una region por ID | —                |
-| `POST`   | `/api/regiones`        | Crear una region          | `Region` JSON    |
-| `PUT`    | `/api/regiones/{id}`   | Editar una region         | `Region` JSON    |
-| `DELETE` | `/api/regiones/{id}`   | Eliminar una region       | —                |
-
-**Body `Region`:**
-```json
-{
-  "nombre": "string"
-}
-```
-
----
-
-### Comunas - `/api/comunas`
-
-| Metodo   | Endpoint               | Descripcion               | Body / Params    |
-|----------|------------------------|---------------------------|------------------|
-| `GET`    | `/api/comunas`         | Obtener todas las comunas | —                |
-| `GET`    | `/api/comunas/{id}`    | Obtener una comuna por ID | —                |
-| `POST`   | `/api/comunas`         | Crear una comuna          | `Comuna` JSON    |
-| `PUT`    | `/api/comunas/{id}`    | Editar una comuna         | `Comuna` JSON    |
-| `DELETE` | `/api/comunas/{id}`    | Eliminar una comuna       | —                |
-
-**Body `Comuna`:**
-```json
-{
-  "nombre": "string",
-  "region": { "idRegion": 1 }
-}
-```
-
----
+> Los endpoints de crear, editar y eliminar también existen para regiones y
+> comunas (`POST`, `PUT` y `DELETE` sobre las mismas rutas).
 
 ### Marcas - `/api/marcas`
 
-| Metodo   | Endpoint               | Descripcion               | Body / Params    |
-|----------|------------------------|---------------------------|------------------|
-| `GET`    | `/api/marcas`          | Obtener todas las marcas  | —                |
-| `GET`    | `/api/marcas/{id}`     | Obtener una marca por ID  | —                |
-| `POST`   | `/api/marcas`          | Crear una marca           | `Marca` JSON     |
-| `PUT`    | `/api/marcas/{id}`     | Editar una marca          | `Marca` JSON     |
-| `DELETE` | `/api/marcas/{id}`     | Eliminar una marca        | —                |
-
-**Body `Marca`:**
-```json
-{
-  "nombre": "string"
-}
-```
-
----
+| Método | Endpoint          | Descripción            |
+|--------|-------------------|------------------------|
+| GET    | `/api/marcas`     | Listar marcas          |
+| GET    | `/api/marcas/{id}`| Obtener una marca por ID |
 
 ### Productos - `/api/productos`
 
-> Los endpoints de consulta y mutacion de productos devuelven un `ProductoDTOResponse`
-> donde `marca` es el **nombre** de la marca (no el `idMarca`).
+| Método | Endpoint                                       | Descripción                              |
+|--------|------------------------------------------------|------------------------------------------|
+| GET    | `/api/productos`                               | Listar todos los productos               |
+| GET    | `/api/productos/{sku}`                         | Obtener un producto por su SKU           |
+| GET    | `/api/productos/marca/{idMarca}`               | Listar productos de una marca            |
+| GET    | `/api/productos/precio?min=X&max=Y`            | Listar productos por rango de precio     |
+| GET    | `/api/productos/stock?min=X&max=Y`             | Listar productos por rango de stock      |
+| GET    | `/api/productos/nombre/{nombre}`               | Listar productos por nombre              |
+| POST   | `/api/productos`                               | Crear un producto                        |
+| POST   | `/api/productos/{sku}`                         | Editar un producto                       |
+| PUT    | `/api/productos/{sku}/stock/setear?stock=X`    | Fijar el stock en un valor específico    |
+| PUT    | `/api/productos/{sku}/stock/disminuir?unidades=X` | Disminuir el stock                   |
+| PUT    | `/api/productos/{sku}/stock/aumentar?unidades=X` | Aumentar el stock                     |
+| DELETE | `/api/productos/{sku}`                         | Eliminar un producto                     |
 
-| Metodo   | Endpoint                                        | Descripcion                            | Body / Params                              |
-|----------|-------------------------------------------------|----------------------------------------|--------------------------------------------|
-| `GET`    | `/api/productos/{sku}`                          | Obtener un producto por SKU            | —                                          |
-| `GET`    | `/api/productos/marca/{idMarca}`                | Obtener productos por marca            | —                                          |
-| `GET`    | `/api/productos/precio?min=X&max=Y`             | Obtener productos por rango precio     | Query params: `min`, `max` (Long)          |
-| `GET`    | `/api/productos/stock?min=X&max=Y`              | Obtener productos por rango stock      | Query params: `min`, `max` (Long)          |
-| `GET`    | `/api/productos/nombre/{nombre}`                | Obtener productos por nombre           | —                                          |
-| `POST`   | `/api/productos`                                | Crear un producto                      | `Producto` JSON                            |
-| `PUT`    | `/api/productos/{sku}`                          | Editar un producto                     | `Producto` JSON                            |
-| `PUT`    | `/api/productos/{sku}/stock/setear?stock=X`     | Setear stock a un valor especifico     | Query param: `stock` (Long, >= 0)          |
-| `PUT`    | `/api/productos/{sku}/stock/disminuir?unidades=X`| Disminuir stock en N unidades         | Query param: `unidades` (Long, >= 0)       |
-| `PUT`    | `/api/productos/{sku}/stock/aumentar?unidades=X`| Aumentar stock en N unidades          | Query param: `unidades` (Long, >= 0)       |
-| `DELETE` | `/api/productos/{sku}`                          | Eliminar un producto                   | —                                          |
+**Datos para crear o editar un producto:**
 
-> **Regla de stock:** el stock solo admite numeros enteros positivos mas el cero (>= 0).
-> Si `disminuir` dejara el stock en negativo, se retorna un error.
-
-**Body `Producto` (entrada):**
 ```json
 {
   "nombre": "string",
   "descripcion": "string",
-  "precio": 10000,
-  "stock": 50,
-  "img": "string",
-  "marca": { "idMarca": 1 }
+  "idMarca": 1,
+  "precio": 3990,
+  "stock": 25,
+  "img": "string"
 }
 ```
 
-**Respuesta `ProductoDTOResponse`:**
-```json
-{
-  "sku": 1,
-  "nombre": "string",
-  "descripcion": "string",
-  "marca": "Nombre de la marca",
-  "precio": 10000,
-  "stock": 50
-}
-```
+> El stock solo acepta números enteros positivos o cero (>= 0). Si al disminuir
+> el stock quedaría en negativo, la aplicación devuelve un error.
 
----
-
-## Estructura del Proyecto
+## Estructura del proyecto
 
 ```
 src/main/java/com/esam/esam_backend/
-├── controller/
-│   ├── UsuarioController.java
-│   ├── RolUsuarioController.java
-│   ├── RegionController.java
-│   ├── ComunaController.java
-│   ├── MarcaController.java
-│   └── ProductoController.java
-├── dto/
-│   ├── producto/
-│   │   └── ProductoDTOResponse.java
-│   └── usuario/
-│       ├── UsuarioDTOResponse.java
-│       ├── UsuarioDTOLogin.java
-│       ├── UsuarioDTOLoginResponse.java
-│       └── UsuarioDTORequest.java
-├── mapper/
-│   ├── ProductoMapper.java
-│   ├── UsuarioMapper.java
-│   └── UsuarioDTORequestMapper.java
-├── model/
-│   ├── Usuario.java
-│   ├── RolUsuario.java
-│   ├── Region.java
-│   ├── Comuna.java
-│   ├── Marca.java
-│   ├── Producto.java
-│   └── Carrito.java
-├── repository/
-│   ├── UsuarioRepository.java
-│   ├── RolUsuarioRepository.java
-│   ├── RegionRepository.java
-│   ├── ComunaRepository.java
-│   ├── MarcaRepository.java
-│   └── ProductoRepository.java
-├── service/
-│   ├── UsuarioService.java
-│   ├── RolUsuarioService.java
-│   ├── RegionService.java
-│   ├── ComunaService.java
-│   ├── MarcaService.java
-│   └── ProductoService.java
-└── EsamBackendApplication.java
+├── controller/       Rutas de la API (6 controladores)
+├── dto/              Objetos de entrada y salida de la API
+├── mapper/           Conversión entre entidades y DTOs
+├── model/            Entidades de la base de datos
+├── repository/       Acceso a los datos
+└── service/          Lógica de negocio
+
+src/main/resources/
+├── application.yaml  Configuración (puerto, base de datos, Flyway)
+├── db/creacion_admin.sql  Script para crear la BD y el usuario
+└── db/migration/     Migraciones de Flyway (V1 a V6)
 ```
-
-## Migraciones Flyway
-
-| Archivo   | Descripcion                     |
-|-----------|---------------------------------|
-| `V1`      | Creacion de tablas iniciales    |
-| `V2`      | Carga de regiones               |
-| `V3`      | Carga de comunas                |
-| `V4`      | Poblado de roles de usuario     |
-| `V5`      | Poblado de marcas               |
-| `V6`      | Poblado de productos            |

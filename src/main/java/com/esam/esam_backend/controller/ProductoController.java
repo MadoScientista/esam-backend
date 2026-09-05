@@ -74,7 +74,7 @@ public class ProductoController {
     }
 
     // Editar un producto
-    @PutMapping("/{sku}")
+    @PostMapping("/{sku}")
     public ProductoDTOResponse editar(@PathVariable Long sku, @RequestBody ProductoDTORequest dto) {
         return productoMapper.toDTO(productoService.editar(sku, dto));
     }

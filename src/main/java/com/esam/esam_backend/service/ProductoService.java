@@ -54,6 +54,7 @@ public class ProductoService {
 
     // Guardar
     public Producto guardar(Producto producto) {
+        validarStock(producto.getStock());
         return pRepo.save(producto);
     }
 

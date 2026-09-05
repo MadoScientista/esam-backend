@@ -41,7 +41,13 @@ public class UsuarioService {
         usuario.setNombres(datos.getNombres());
         usuario.setAPaterno(datos.getAPaterno());
         usuario.setAMaterno(datos.getAMaterno());
+        usuario.setRut(datos.getRut());
+        usuario.setDv(datos.getDv());
+        usuario.setFechaNacimiento(datos.getFechaNacimiento());
+        usuario.setDireccion(datos.getDireccion());
+        usuario.setTelefono(datos.getTelefono());
         usuario.setNombreUsuario(datos.getNombreUsuario());
+        usuario.setCorreo(datos.getCorreo());
         usuario.setPassword(datos.getPassword());
         usuario.setRolUsuario(datos.getRolUsuario());
         return uRepo.save(usuario);
@@ -57,5 +63,10 @@ public class UsuarioService {
     public boolean confirmarLogin(String nombreUsuario, String password) {
         Usuario usuario = uRepo.findByNombreUsuario(nombreUsuario);
         return usuario != null && usuario.getPassword().equals(password);
+    }
+
+    // Obtener usuario según su nombre de usuario
+    public Usuario obtenerPorNombreUsuario(String nombreUsuario) {
+        return uRepo.findByNombreUsuario(nombreUsuario);
     }
 }

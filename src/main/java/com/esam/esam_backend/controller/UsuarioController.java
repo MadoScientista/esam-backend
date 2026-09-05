@@ -14,9 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.esam.esam_backend.dto.usuario.UsuarioDTOLogin;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOLoginResponse;
+import com.esam.esam_backend.dto.usuario.UsuarioDTORequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOResponse;
+import com.esam.esam_backend.mapper.UsuarioDTORequestMapper;
 import com.esam.esam_backend.mapper.UsuarioMapper;
 import com.esam.esam_backend.model.Usuario;
+import com.esam.esam_backend.service.ComunaService;
+import com.esam.esam_backend.service.RegionService;
+import com.esam.esam_backend.service.RolUsuarioService;
 import com.esam.esam_backend.service.UsuarioService;
 
 @RestController
@@ -26,7 +31,18 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private RolUsuarioService rolUsuarioService;
+
+    @Autowired
+    private RegionService regionService;
+
+    @Autowired
+    private ComunaService comunaService;
+
     private final UsuarioMapper usuarioMapper = new UsuarioMapper();
+
+    private final UsuarioDTORequestMapper requestMapper = new UsuarioDTORequestMapper();
 
     // Obtener un usuario por su id
     @GetMapping("/{id}")
@@ -50,18 +66,32 @@ public class UsuarioController {
     @PostMapping("/login")
     public UsuarioDTOLoginResponse login(@RequestBody UsuarioDTOLogin login) {
         boolean loggin = usuarioService.confirmarLogin(login.getNombreUsuario(), login.getPassword());
-        return new UsuarioDTOLoginResponse(loggin);
+        UsuarioDTOLoginResponse response = new UsuarioDTOLoginResponse();
+        response.setLoggin(loggin);
+        if (loggin) {
+            Usuario usuario = usuarioService.obtenerPorNombreUsuario(login.getNombreUsuario());
+            response.setUsuario(usuarioMapper.toDTO(usuario));
+        }
+        return response;
     }
 
     // Guardar un usuario
     @PostMapping
-    public UsuarioDTOResponse guardar(@RequestBody Usuario usuario) {
+    public UsuarioDTOResponse guardar(@RequestBody UsuarioDTORequest dto) {
+        Usuario usuario = requestMapper.toEntity(dto,
+                rolUsuarioService.obtenerPorId(dto.getIdRolUsuario()),
+                regionService.obtenerPorId(dto.getIdRegion()),
+                comunaService.obtenerPorId(dto.getIdComuna()));
         return usuarioMapper.toDTO(usuarioService.guardar(usuario));
     }
 
     // Editar un usuario
-    @PutMapping("/{id}")
-    public UsuarioDTOResponse editar(@PathVariable Long id, @RequestBody Usuario usuario) {
+    @PostMapping("/{id}")
+    public UsuarioDTOResponse editar(@PathVariable Long id, @RequestBody UsuarioDTORequest dto) {
+        Usuario usuario = requestMapper.toEntity(dto,
+                rolUsuarioService.obtenerPorId(dto.getIdRolUsuario()),
+                regionService.obtenerPorId(dto.getIdRegion()),
+                comunaService.obtenerPorId(dto.getIdComuna()));
         return usuarioMapper.toDTO(usuarioService.editar(id, usuario));
     }
 

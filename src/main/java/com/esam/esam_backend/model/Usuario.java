@@ -9,6 +9,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 @Entity
 @Data
 @NoArgsConstructor
@@ -21,7 +23,13 @@ public class Usuario {
     private String aPaterno;
     private String aMaterno;
 
-    private String telefono;
+    private Long rut;
+    private String dv;
+
+    private LocalDate fechaNacimiento;
+
+    private String direccion;
+    private Long telefono;
     private String nombreUsuario;
     private String correo;
     private String password;

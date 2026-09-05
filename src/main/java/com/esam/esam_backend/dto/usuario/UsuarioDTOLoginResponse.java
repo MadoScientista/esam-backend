@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class UsuarioDTOLoginResponse {
 
     private boolean loggin;
+    private UsuarioDTOResponse usuario;
 }

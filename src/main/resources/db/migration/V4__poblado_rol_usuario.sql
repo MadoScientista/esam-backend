@@ -20,11 +20,11 @@ INSERT INTO usuario (
     id_region,
     id_comuna) VALUES
 ('Carlos', 'Soto', 'Mendoza', 'admin@duoc.cl', 12345678, 'K',
- 'Av. Providencia 1200, Providencia', '1985-03-14', 56912345678,
- 'admin123', 'admin@duoc.cl', 1, 7, 1),
+ 'El cardenal 1233', '1985-03-14', 56912345678,
+ 'admin123', 'admin@duoc.cl', 1, 7, 104),
 ('Valentina', 'Rojas', 'Pérez', 'vendedores@gmail.cl', 23456789, '1',
- 'Las Condes 4560, Las Condes', '1992-07-22', 56923456789,
- 'vendedor123', 'vendedores@gmail.cl', 2, 7, 2),
+ 'Avenida 10', '1992-07-22', 56923456789,
+ 'vendedor123', 'vendedores@gmail.cl', 2, 7, 113),
 ('Matías', 'González', 'Díaz', 'cliente@duoc.com', 34567890, '7',
- 'La Dehesa 300, Lo Barnechea', '1998-11-05', 56934567890,
- 'cliente123', 'cliente@duoc.com', 3, 7, 3);
+ 'Calle 13', '1998-11-05', 56934567890,
+ 'cliente123', 'cliente@duoc.com', 3, 7, 105);  

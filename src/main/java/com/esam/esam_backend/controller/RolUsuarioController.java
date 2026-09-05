@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.esam.esam_backend.dto.rolusuario.RolUsuarioDTOResponse;
+import com.esam.esam_backend.mapper.RolUsuarioMapper;
 import com.esam.esam_backend.model.RolUsuario;
 import com.esam.esam_backend.service.RolUsuarioService;
 
@@ -22,16 +24,18 @@ public class RolUsuarioController {
     @Autowired
     private RolUsuarioService rolUsuarioService;
 
+    private final RolUsuarioMapper rolUsuarioMapper = new RolUsuarioMapper();
+
     // Obtener un rol por su id
     @GetMapping("/{id}")
-    public RolUsuario obtenerPorId(@PathVariable Long id) {
-        return rolUsuarioService.obtenerPorId(id);
+    public RolUsuarioDTOResponse obtenerPorId(@PathVariable Long id) {
+        return rolUsuarioMapper.toDTO(rolUsuarioService.obtenerPorId(id));
     }
 
     // Obtener todos los roles
     @GetMapping
-    public List<RolUsuario> obtenerTodos() {
-        return rolUsuarioService.obtenerTodos();
+    public List<RolUsuarioDTOResponse> obtenerTodos() {
+        return rolUsuarioMapper.toDTOList(rolUsuarioService.obtenerTodos());
     }
 
     // Guardar un rol

@@ -8,7 +8,7 @@ VALUES
     'Archivador tradicional de tamaño carta, ideal para organizar y almacenar documentos y papeles.',
     3990,
     25,
-    'https://www.torre.cl/wp-content/uploads/2023/01/11560-1.jpg',
+    'https://http2.mlstatic.com/D_NQ_NP_2X_814317-MLA99600567088_122025-F.webp',
     1
 ),
 (
@@ -16,7 +16,7 @@ VALUES
     'Block de apuntes de 80 hojas con diseño Black Colors, apropiado para escritura y toma de notas.',
     2290,
     30,
-    'https://www.prisa.cl/media/cache/attachment/filter/product_gallery_main/b6b1adc76b36bd6a7f81344215e93277/250666/672a40a65892d650232435.jpg',
+    'https://http2.mlstatic.com/D_NQ_NP_2X_806215-MLC54389907825_032023-F-block-apuntes-harry-potter-7mm-80-hojas-torre.webp',
     1
 ),
 (

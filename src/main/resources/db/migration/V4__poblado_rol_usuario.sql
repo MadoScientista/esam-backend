@@ -25,6 +25,6 @@ INSERT INTO usuario (
 ('Valentina', 'Rojas', 'Pérez', 'vendedores@gmail.cl', 23456789, '1',
  'Avenida 10', '1992-07-22', 56923456789,
  'vendedor123', 'vendedores@gmail.cl', 2, 7, 113),
-('Matías', 'González', 'Díaz', 'cliente@duoc.com', 34567890, '7',
+('Matías', 'González', 'Díaz', 'cliente@duoc.cl', 34567890, '7',
  'Calle 13', '1998-11-05', 56934567890,
- 'cliente123', 'cliente@duoc.com', 3, 7, 105);  
+ 'cliente123', 'cliente@duoc.cl', 3, 7, 105);  

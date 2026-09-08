@@ -48,7 +48,11 @@ public class UsuarioService {
         usuario.setTelefono(datos.getTelefono());
         usuario.setNombreUsuario(datos.getNombreUsuario());
         usuario.setCorreo(datos.getCorreo());
-        usuario.setPassword(datos.getPassword());
+
+        if(datos.getPassword() != null && !datos.getPassword().isEmpty()){
+            usuario.setPassword(datos.getPassword());
+        }
+        
         usuario.setRolUsuario(datos.getRolUsuario());
         return uRepo.save(usuario);
     }

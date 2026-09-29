@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,6 +21,8 @@ public class RolUsuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idRolUsuario;
+
+    @Column(nullable = false, length = 25)
     private String nombre;
 
     // Un rol puede tener muchos usuarios

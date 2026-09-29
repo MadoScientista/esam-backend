@@ -3,6 +3,7 @@ package com.esam.esam_backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +23,8 @@ public class Comuna {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idComuna;
+
+    @Column(nullable = false, length = 25)
     private String nombre;
 
     // Relación muchos a uno

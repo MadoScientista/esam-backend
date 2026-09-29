@@ -1,5 +1,6 @@
 package com.esam.esam_backend.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -7,6 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,6 +22,8 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idUsuario;
+
+    // Datos básicos
     private String nombres;
     private String aPaterno;
     private String aMaterno;
@@ -30,8 +35,20 @@ public class Usuario {
 
     private String direccion;
     private Long telefono;
+
+    // Datos de credenciales
+
+    @NotBlank 
+    @Size(max=50)
+    @Column(nullable = false, unique = true, length = 50)
     private String nombreUsuario;
+
+    @NotBlank 
+    @Size(max=50)
+    @Column(nullable = false, unique = true, length = 50)
     private String correo;
+
+
     private String password;
 
     // Muchos usuarios pueden tener un rol

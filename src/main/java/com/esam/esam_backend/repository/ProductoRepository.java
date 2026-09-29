@@ -8,8 +8,11 @@ import com.esam.esam_backend.model.Producto;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long>{
 
-    // Productos según su marca
+    // Productos según idMarca
     List<Producto> findByMarcaIdMarca(Long idMarca);
+
+    // Productos según su nombre de marca
+    List<Producto> findByMarcaNombre(String nombre);
 
     // Productos según rango de precio
     List<Producto> findByPrecioBetween(Long precioMin, Long precioMax);
@@ -18,5 +21,5 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>{
     List<Producto> findByStockBetween(Long stockMin, Long stockMax);
 
     // Productos según su nombre
-    List<Producto> findByNombre(String nombre);
+    List<Producto> findByNombreContaining(String nombre);
 }

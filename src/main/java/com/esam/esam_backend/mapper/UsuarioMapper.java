@@ -3,12 +3,15 @@ package com.esam.esam_backend.mapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
+import com.esam.esam_backend.dto.comuna.ComunaDTO;
+import com.esam.esam_backend.dto.region.RegionDTO;
+import com.esam.esam_backend.dto.rolusuario.RolUsuarioDTO;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOResponse;
-import com.esam.esam_backend.dto.usuario.UsuarioDTOResponse.ComunaDTO;
-import com.esam.esam_backend.dto.usuario.UsuarioDTOResponse.RegionDTO;
-import com.esam.esam_backend.dto.usuario.UsuarioDTOResponse.RolDTO;
 import com.esam.esam_backend.model.Usuario;
 
+@Component 
 public class UsuarioMapper {
 
     public UsuarioDTOResponse toDTO(Usuario usuario) {
@@ -31,7 +34,7 @@ public class UsuarioMapper {
         comuna.setIdComuna(usuario.getComuna().getIdComuna());
         comuna.setNombre(usuario.getComuna().getNombre());
         dto.setComuna(comuna);
-        RolDTO rol = new RolDTO();
+        RolUsuarioDTO rol = new RolUsuarioDTO();
         rol.setIdRolUsuario(usuario.getRolUsuario().getIdRolUsuario());
         rol.setNombre(usuario.getRolUsuario().getNombre());
         dto.setRol(rol);

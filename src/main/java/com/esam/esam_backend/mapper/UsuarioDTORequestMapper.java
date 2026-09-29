@@ -1,11 +1,14 @@
 package com.esam.esam_backend.mapper;
 
+import org.springframework.stereotype.Component;
+
 import com.esam.esam_backend.dto.usuario.UsuarioDTORequest;
 import com.esam.esam_backend.model.Comuna;
 import com.esam.esam_backend.model.Region;
 import com.esam.esam_backend.model.RolUsuario;
 import com.esam.esam_backend.model.Usuario;
 
+@Component 
 public class UsuarioDTORequestMapper {
 
     public Usuario toEntity(UsuarioDTORequest dto, RolUsuario rol, Region region, Comuna comuna) {

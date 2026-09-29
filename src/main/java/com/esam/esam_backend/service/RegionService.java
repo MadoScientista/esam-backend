@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.esam.esam_backend.dto.region.RegionComunasDTO;
-import com.esam.esam_backend.model.Comuna;
+import com.esam.esam_backend.mapper.RegionMapper;
 import com.esam.esam_backend.model.Region;
 import com.esam.esam_backend.repository.RegionRepository;
 
@@ -15,6 +15,8 @@ public class RegionService {
 
     @Autowired
     private RegionRepository rRepo;
+
+    private final RegionMapper regionMapper = new RegionMapper();
 
     // Obtener según su id
     public Region obtenerPorId(Long id) {
@@ -47,34 +49,13 @@ public class RegionService {
 
     // Todas las regiones con sus comunas
     public List<RegionComunasDTO> obtenerTodasConComunas() {
-        return rRepo.findAllConComunas().stream()
-                .map(this::toDTO)
-                .toList();
+        return regionMapper.toDTOList(rRepo.findAllConComunas());
     }
 
     // Una región con sus comunas
     public RegionComunasDTO obtenerPorIdConComunas(Long id) {
         Region region = rRepo.findByIdConComunas(id)
                 .orElseThrow(() -> new RuntimeException("Región no encontrada con id: " + id));
-        return toDTO(region);
-    }
-
-    // Mapeo de Region a DTO
-    private RegionComunasDTO toDTO(Region region) {
-        RegionComunasDTO dto = new RegionComunasDTO();
-        dto.setIdRegion(region.getIdRegion());
-        dto.setRegion(region.getNombre());
-        dto.setComunas(region.getComunas().stream()
-                .map(this::toComunaDTO)
-                .toList());
-        return dto;
-    }
-
-    // Mapeo de Comuna a DTO
-    private RegionComunasDTO.ComunaDTO toComunaDTO(Comuna comuna) {
-        RegionComunasDTO.ComunaDTO dto = new RegionComunasDTO.ComunaDTO();
-        dto.setIdComuna(comuna.getIdComuna());
-        dto.setNombre(comuna.getNombre());
-        return dto;
+        return regionMapper.toDTO(region);
     }
 }

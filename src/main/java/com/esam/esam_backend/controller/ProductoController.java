@@ -3,6 +3,8 @@ package com.esam.esam_backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.dto.producto.ProductoDTOResponse;
-import com.esam.esam_backend.mapper.ProductoDTORequestMapper;
 import com.esam.esam_backend.mapper.ProductoMapper;
+import com.esam.esam_backend.model.Producto;
 import com.esam.esam_backend.service.ProductoService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -26,80 +30,112 @@ public class ProductoController {
     @Autowired
     private ProductoService productoService;
 
-    private final ProductoMapper productoMapper = new ProductoMapper();
-
     @Autowired
-    private ProductoDTORequestMapper productoDTORequestMapper;
+    private ProductoMapper pMapper;
 
     // Obtener todos los productos
     @GetMapping()
-    public List<ProductoDTOResponse> obtenerProductos(){
-        return productoMapper.toDTOList(productoService.obteneProductos());
+    public ResponseEntity<List<ProductoDTOResponse>> obtenerProductos(){
+        
+        List<Producto> productos = productoService.obteneProductos();
+        List<ProductoDTOResponse> dtoList = pMapper.toDTOList(productos);
+
+        return ResponseEntity.ok(dtoList);
     }
     
     // Obtener un producto por su sku
     @GetMapping("/{sku}")
-    public ProductoDTOResponse obtenerPorId(@PathVariable Long sku) {
-        return productoMapper.toDTO(productoService.obtenerPorId(sku));
+    public ResponseEntity<ProductoDTOResponse> obtenerPorId(@PathVariable Long sku) {
+        
+        Producto p = productoService.obtenerPorId(sku);
+        ProductoDTOResponse dto = pMapper.toDTO(p);
+        return ResponseEntity.ok(dto);
     }
 
-    // Obtener productos según su marca
-    @GetMapping("/marca/{idMarca}")
-    public List<ProductoDTOResponse> obtenerPorMarca(@PathVariable Long idMarca) {
-        return productoMapper.toDTOList(productoService.obtenerPorMarca(idMarca));
+    // Obtener productos filtrados por id de marca
+    @GetMapping("/marca/{idONombreMarca}")
+    public ResponseEntity<List<ProductoDTOResponse>> obtenerPorMarca(@PathVariable String idONombreMarca) {
+
+        List<Producto> pLista = productoService.obtenerPorMarca(idONombreMarca);
+        List<ProductoDTOResponse> dtoList = pMapper.toDTOList(pLista);
+
+        return ResponseEntity.ok(dtoList);
     }
+
 
     // Obtener productos según rango de precio
     @GetMapping("/precio")
-    public List<ProductoDTOResponse> obtenerPorRangoPrecio(@RequestParam Long min, @RequestParam Long max) {
-        return productoMapper.toDTOList(productoService.obtenerPorRangoPrecio(min, max));
+    public ResponseEntity<List<ProductoDTOResponse>> obtenerPorRangoPrecio(@RequestParam Long min, @RequestParam Long max) {
+
+        List<Producto> pList = productoService.obtenerPorRangoPrecio(min, max);
+        List<ProductoDTOResponse> dtoList = pMapper.toDTOList(pList);
+        return ResponseEntity.ok(dtoList);
     }
 
     // Obtener productos según rango de stock
     @GetMapping("/stock")
-    public List<ProductoDTOResponse> obtenerPorRangoStock(@RequestParam Long min, @RequestParam Long max) {
-        return productoMapper.toDTOList(productoService.obtenerPorRangoStock(min, max));
+    public ResponseEntity<List<ProductoDTOResponse>> obtenerPorRangoStock(@RequestParam Long min, @RequestParam Long max) {
+
+        List<Producto> pList = productoService.obtenerPorRangoStock(min, max);
+        List<ProductoDTOResponse> dtoList = pMapper.toDTOList(pList);
+        return ResponseEntity.ok(dtoList);
     }
 
-    // Obtener productos según su nombre
-    @GetMapping("/nombre/{nombre}")
-    public List<ProductoDTOResponse> obtenerPorNombre(@PathVariable String nombre) {
-        return productoMapper.toDTOList(productoService.obtenerPorNombre(nombre));
+    // Filtra productos que contengan en su nombre lo indicado en el parámetro
+    @GetMapping("/nombre")
+    public ResponseEntity<List<ProductoDTOResponse>> obtenerPorNombre(@RequestParam  String nombre) {
+        
+        List<Producto> pList = productoService.obtenerPorNombre(nombre);
+        List<ProductoDTOResponse> dtoList = pMapper.toDTOList(pList);
+        return ResponseEntity.ok(dtoList);
     }
 
     // Guardar un producto
     @PostMapping
-    public ProductoDTOResponse guardar(@RequestBody ProductoDTORequest dto) {
-        return productoMapper.toDTO(productoService.guardar(productoDTORequestMapper.toEntity(dto)));
+    public ResponseEntity<ProductoDTOResponse> guardar(@Valid @RequestBody ProductoDTORequest request) {
+        
+        Producto p = pMapper.toEntity(request);
+        Producto pGuardado = productoService.guardar(p);
+        ProductoDTOResponse dto = pMapper.toDTO(pGuardado);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     // Editar un producto
     @PostMapping("/{sku}")
-    public ProductoDTOResponse editar(@PathVariable Long sku, @RequestBody ProductoDTORequest dto) {
-        return productoMapper.toDTO(productoService.editar(sku, dto));
+        public ResponseEntity<ProductoDTOResponse> editar(@PathVariable Long sku, @RequestBody @Valid ProductoDTORequest request) {
+        
+        Producto p = productoService.editar(sku, request);
+        ProductoDTOResponse dto = pMapper.toDTO(p);
+        return ResponseEntity.ok(dto);
     }
 
     // Setear stock a un valor específico
     @PutMapping("/{sku}/stock/setear")
-    public ProductoDTOResponse setearStock(@PathVariable Long sku, @RequestParam Long stock) {
-        return productoMapper.toDTO(productoService.setearStock(sku, stock));
+    public ResponseEntity<ProductoDTOResponse> setearStock(@PathVariable Long sku, @RequestParam Long stock) {
+        
+        Producto p = productoService.setearStock(sku, stock);
+        ProductoDTOResponse dto = pMapper.toDTO(p);
+        return ResponseEntity.ok(dto);
     }
 
     // Disminuir stock en las unidades especificadas
     @PutMapping("/{sku}/stock/disminuir")
     public ProductoDTOResponse disminuirStock(@PathVariable Long sku, @RequestParam Long unidades) {
-        return productoMapper.toDTO(productoService.disminuirStock(sku, unidades));
+        return pMapper.toDTO(productoService.disminuirStock(sku, unidades));
     }
 
     // Aumentar stock en las unidades especificadas
     @PutMapping("/{sku}/stock/aumentar")
     public ProductoDTOResponse aumentarStock(@PathVariable Long sku, @RequestParam Long unidades) {
-        return productoMapper.toDTO(productoService.aumentarStock(sku, unidades));
+        return pMapper.toDTO(productoService.aumentarStock(sku, unidades));
     }
 
     // Borrar un producto
     @DeleteMapping("/{sku}")
-    public void borrar(@PathVariable Long sku) {
-        productoService.borrar(sku);
+    public ResponseEntity<Producto> borrar(@PathVariable Long sku) {
+        
+        Producto p = productoService.borrar(sku);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

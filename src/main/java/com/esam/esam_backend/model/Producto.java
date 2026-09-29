@@ -1,5 +1,6 @@
 package com.esam.esam_backend.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -20,12 +21,21 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long sku;
     
+    @Column(nullable = false, length = 50)
     private String nombre;
 
+    
     @Lob
+    @Column(nullable = false)
     private String descripcion;
+    
+    @Column(nullable = false)
     private Long precio;
+    
+    @Column(nullable = false)
     private Long stock;
+    
+    
     private String img;
     
     // Varios productos pueden tener una marca

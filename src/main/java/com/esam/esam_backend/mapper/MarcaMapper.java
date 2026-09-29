@@ -3,9 +3,12 @@ package com.esam.esam_backend.mapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
 import com.esam.esam_backend.dto.marca.MarcaDTO;
 import com.esam.esam_backend.model.Marca;
 
+@Component 
 public class MarcaMapper {
 
     public MarcaDTO toDTO(Marca marca) {

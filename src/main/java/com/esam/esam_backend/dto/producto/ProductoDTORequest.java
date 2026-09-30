@@ -28,6 +28,4 @@ public class ProductoDTORequest {
     @NotNull 
     @Min(value = 0)
     private Long stock;
-    
-    private String img;
 }

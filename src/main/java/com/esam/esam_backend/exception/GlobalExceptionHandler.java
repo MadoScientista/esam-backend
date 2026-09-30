@@ -14,6 +14,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.esam.esam_backend.dto.error.ApiErrorResponse;
 
@@ -43,6 +44,36 @@ public class GlobalExceptionHandler {
             ConflictoStockException exception,
             HttpServletRequest request) {
         return respuesta(HttpStatus.CONFLICT, "CONFLICTO_STOCK", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ProductoConImagenesException.class)
+    public ResponseEntity<ApiErrorResponse> manejarProductoConImagenes(
+            ProductoConImagenesException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "PRODUCTO_CON_IMAGENES", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ImagenNoEncontradaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarImagenNoEncontrada(
+            ImagenNoEncontradaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.NOT_FOUND, "IMAGEN_NO_ENCONTRADA", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ImagenInvalidaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarImagenInvalida(
+            ImagenInvalidaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.BAD_REQUEST, "IMAGEN_INVALIDA", exception.getMessage(), request);
+    }
+
+    // El archivo supera spring.servlet.multipart.max-file-size
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiErrorResponse> manejarArchivoMuyGrande(
+            MaxUploadSizeExceededException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.BAD_REQUEST, "ARCHIVO_MUY_GRANDE",
+                "El archivo supera el tamaño máximo permitido", request);
     }
 
     @ExceptionHandler(ComunaNoEncontradaException.class)

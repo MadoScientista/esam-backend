@@ -138,4 +138,12 @@ public class ProductoController {
         productoService.borrar(sku);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    // Borrar un producto junto con todas sus imagenes
+    @DeleteMapping("/{sku}/cascada")
+    public ResponseEntity<Void> borrarEnCascada(@PathVariable Long sku) {
+
+        productoService.borrarEnCascada(sku);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

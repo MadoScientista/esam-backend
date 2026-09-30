@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 class GlobalExceptionHandlerTests {
 
@@ -37,6 +38,49 @@ class GlobalExceptionHandlerTests {
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals("CONFLICTO_STOCK", response.getBody().code());
+    }
+
+    @Test
+    void mapsProductoWithImagesToConflict() {
+        var requestProducto = new MockHttpServletRequest("DELETE", "/api/productos/42");
+        var response = handler.manejarProductoConImagenes(
+                new ProductoConImagenesException("El producto 42 tiene 3 imagen(es) asociada(s)"), requestProducto);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals("PRODUCTO_CON_IMAGENES", response.getBody().code());
+        assertEquals("/api/productos/42", response.getBody().path());
+    }
+
+    @Test
+    void mapsImagenNotFoundToNotFound() {
+        var requestImagen = new MockHttpServletRequest("DELETE", "/api/productos/42/imagenes/7");
+        var response = handler.manejarImagenNoEncontrada(
+                new ImagenNoEncontradaException("No existe una imagen con id 7 en el producto 42"), requestImagen);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("IMAGEN_NO_ENCONTRADA", response.getBody().code());
+        assertEquals("/api/productos/42/imagenes/7", response.getBody().path());
+    }
+
+    @Test
+    void mapsImagenInvalidaToBadRequest() {
+        var requestImagen = new MockHttpServletRequest("POST", "/api/productos/42/imagenes");
+        var response = handler.manejarImagenInvalida(
+                new ImagenInvalidaException("Formato no permitido, se aceptan jpg, png y webp"), requestImagen);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("IMAGEN_INVALIDA", response.getBody().code());
+        assertEquals("/api/productos/42/imagenes", response.getBody().path());
+    }
+
+    @Test
+    void mapsArchivoMuyGrandeToBadRequest() {
+        var requestImagen = new MockHttpServletRequest("POST", "/api/productos/42/imagenes");
+        var response = handler.manejarArchivoMuyGrande(
+                new MaxUploadSizeExceededException(5L * 1024 * 1024), requestImagen);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("ARCHIVO_MUY_GRANDE", response.getBody().code());
     }
 
     @Test

@@ -55,17 +55,42 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `esam_db`.`producto` (
   `sku` BIGINT NOT NULL AUTO_INCREMENT,
-  `nombre` VARCHAR(255) NULL DEFAULT NULL,
-  `descripcion` LONGTEXT NULL DEFAULT NULL,
-  `precio` BIGINT NULL DEFAULT NULL,
-  `stock` BIGINT NULL DEFAULT NULL,
-  `img` VARCHAR(255) NULL DEFAULT NULL,
+  `nombre` VARCHAR(50) NOT NULL,
+  `descripcion` LONGTEXT NOT NULL,
+  `precio` BIGINT NOT NULL,
+  `stock` BIGINT NOT NULL,
   `id_marca` BIGINT NULL DEFAULT NULL,
   PRIMARY KEY (`sku`),
   INDEX `IDX_producto_id_marca` (`id_marca` ASC) VISIBLE,
   CONSTRAINT `FK_producto_marca`
     FOREIGN KEY (`id_marca`)
     REFERENCES `esam_db`.`marca` (`id_marca`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `esam_db`.`product_image`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `esam_db`.`product_image` (
+  `id_product_image` BIGINT NOT NULL AUTO_INCREMENT,
+  `url` VARCHAR(500) NOT NULL,
+  `public_id` VARCHAR(255) NOT NULL,
+  `sku` BIGINT NOT NULL,
+  `principal` BOOLEAN NOT NULL DEFAULT FALSE,
+  -- Generada: vale el sku si la imagen es principal, NULL si no.
+  -- El indice UNIQUE de abajo tolera los NULL repetidos, asi que solo puede
+  -- existir una fila con principal = TRUE por producto.
+  `principal_key` BIGINT
+    GENERATED ALWAYS AS (IF(`principal`, `sku`, NULL)) STORED,
+  PRIMARY KEY (`id_product_image`),
+  UNIQUE INDEX `UK_product_image_public_id` (`public_id` ASC) VISIBLE,
+  UNIQUE INDEX `UK_product_image_principal` (`principal_key` ASC) VISIBLE,
+  INDEX `IDX_product_image_sku` (`sku` ASC) VISIBLE,
+  CONSTRAINT `FK_product_image_producto`
+    FOREIGN KEY (`sku`)
+    REFERENCES `esam_db`.`producto` (`sku`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;

@@ -19,6 +19,9 @@ public class ProductoMapper {
     @Autowired
     private MarcaRepository marcaRepository;
 
+    @Autowired
+    private ProductImageMapper productImageMapper;
+
 
     public ProductoDTOResponse toDTO(Producto producto) {
         ProductoDTOResponse dto = new ProductoDTOResponse();
@@ -28,7 +31,7 @@ public class ProductoMapper {
         dto.setMarca(producto.getMarca().getNombre());
         dto.setPrecio(producto.getPrecio());
         dto.setStock(producto.getStock());
-        dto.setImg(producto.getImg());
+        dto.setImagenes(productImageMapper.toDTOList(producto.getImagenes()));
         return dto;
     }
 
@@ -44,7 +47,6 @@ public class ProductoMapper {
         producto.setDescripcion(dto.getDescripcion());
         producto.setPrecio(dto.getPrecio());
         producto.setStock(dto.getStock());
-        producto.setImg(dto.getImg());
         producto.setMarca(resolverMarca(dto.getIdMarca()));
         return producto;
     }

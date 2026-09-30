@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.exception.ConflictoStockException;
+import com.esam.esam_backend.exception.ProductoConImagenesException;
 import com.esam.esam_backend.exception.ProductoInvalidoException;
 import com.esam.esam_backend.exception.ProductoNoEncontradoException;
 import com.esam.esam_backend.mapper.ProductoMapper;
@@ -24,15 +25,18 @@ public class ProductoService {
     @Autowired
     private ProductoMapper pMapper;
 
+    @Autowired
+    private ProductImageService productImageService;
+
 
     // Obtener todos los productos
     public List<Producto> obteneProductos(){
-        return pRepo.findAll();
+        return pRepo.findAllConImagenes();
     }
 
     // Obtener según su id
     public Producto obtenerPorId(Long sku) {
-        return pRepo.findById(sku)
+        return pRepo.findByIdConImagenes(sku)
                 .orElseThrow(() -> new ProductoNoEncontradoException("No existe un producto con SKU " + sku));
     }
 
@@ -82,7 +86,6 @@ public class ProductoService {
         producto.setDescripcion(datos.getDescripcion());
         producto.setPrecio(datos.getPrecio());
         producto.setStock(datos.getStock());
-        producto.setImg(datos.getImg());
         Marca marca = pMapper.resolverMarcaParaEdicion(datos.getIdMarca(), producto);
         producto.setMarca(marca);
         return pRepo.save(producto);
@@ -91,7 +94,25 @@ public class ProductoService {
     // Borrar
     public Producto borrar(Long sku) {
         Producto producto = obtenerPorId(sku);
+
+        long imagenesAsociadas = productImageService.contarPorProducto(sku);
+
+        if (imagenesAsociadas > 0) {
+            throw new ProductoConImagenesException(
+                    "El producto " + sku + " tiene " + imagenesAsociadas + " imagen(es) asociada(s)");
+        }
+
         pRepo.delete(producto);
+        return producto;
+    }
+
+    // Borrar el producto junto con todas sus imagenes
+    public Producto borrarEnCascada(Long sku) {
+        Producto producto = obtenerPorId(sku);
+
+        productImageService.borrarTodas(sku);
+        pRepo.delete(producto);
+
         return producto;
     }
 

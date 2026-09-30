@@ -3,7 +3,6 @@ package com.esam.esam_backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,7 +25,7 @@ public class Region {
     private String nombre;
 
     //One to Many
-    @OneToMany(mappedBy = "region", cascade = CascadeType.ALL ,orphanRemoval = true)
+    @OneToMany(mappedBy = "region")
     private List<Comuna> comunas = new ArrayList<>();
 
     //Una region puede tener muchos usuarios

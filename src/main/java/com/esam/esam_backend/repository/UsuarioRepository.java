@@ -11,4 +11,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
     List<Usuario> findByRolUsuarioIdRolUsuario(Long idRolUsuario);
 
     Usuario findByNombreUsuario(String nombreUsuario);
+
+    // Cantidad de usuarios asociados a una región
+    long countByRegionIdRegion(Long idRegion);
 }

@@ -6,4 +6,6 @@ import com.esam.esam_backend.model.Comuna;
 
 public interface ComunaRepository extends JpaRepository<Comuna, Long>{
 
+    // Cantidad de comunas asociadas a una región
+    long countByRegionIdRegion(Long idRegion);
 }

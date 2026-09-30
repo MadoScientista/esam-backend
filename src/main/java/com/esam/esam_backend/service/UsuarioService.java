@@ -81,7 +81,6 @@ public class UsuarioService {
         usuario.setFechaNacimiento(request.getFechaNacimiento());
         usuario.setDireccion(request.getDireccion());
         usuario.setTelefono(request.getTelefono());
-        usuario.setNombreUsuario(request.getNombreUsuario());
         usuario.setCorreo(request.getCorreo());
         usuario.setRolUsuario(rol);
         usuario.setRegion(region);
@@ -101,8 +100,8 @@ public class UsuarioService {
     }
 
     // Confirmar login
-    public boolean confirmarLogin(String nombreUsuario, String password) {
-        Usuario usuario = uRepo.findByNombreUsuario(nombreUsuario);
+    public boolean confirmarLogin(String correo, String password) {
+        Usuario usuario = uRepo.findByCorreo(correo);
 
         if (usuario == null || password == null || usuario.getPassword() == null) {
             return false;
@@ -111,9 +110,9 @@ public class UsuarioService {
         return passwordEncoder.matches(password, usuario.getPassword());
     }
 
-    // Obtener usuario según su nombre de usuario
-    public Usuario obtenerPorNombreUsuario(String nombreUsuario) {
-        return uRepo.findByNombreUsuario(nombreUsuario);
+    // Obtener usuario según su correo
+    public Usuario obtenerPorCorreo(String correo) {
+        return uRepo.findByCorreo(correo);
     }
 
     private Usuario obtenerUsuario(Long id) {

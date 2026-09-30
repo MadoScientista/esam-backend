@@ -38,7 +38,6 @@ public class UsuarioMapper {
         rol.setIdRolUsuario(usuario.getRolUsuario().getIdRolUsuario());
         rol.setNombre(usuario.getRolUsuario().getNombre());
         dto.setRol(rol);
-        dto.setNombreUsuario(usuario.getNombreUsuario());
         return dto;
     }
 

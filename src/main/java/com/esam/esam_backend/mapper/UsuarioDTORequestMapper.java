@@ -21,7 +21,6 @@ public class UsuarioDTORequestMapper {
         usuario.setFechaNacimiento(dto.getFechaNacimiento());
         usuario.setDireccion(dto.getDireccion());
         usuario.setTelefono(dto.getTelefono());
-        usuario.setNombreUsuario(dto.getNombreUsuario());
         usuario.setCorreo(dto.getCorreo());
         usuario.setRolUsuario(rol);
         usuario.setRegion(region);

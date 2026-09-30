@@ -26,7 +26,5 @@ public class UsuarioDTOResponse {
     private RegionDTO region;
     private ComunaDTO comuna;
     private RolUsuarioDTO rol;
-    private String nombreUsuario;
-
 
 }

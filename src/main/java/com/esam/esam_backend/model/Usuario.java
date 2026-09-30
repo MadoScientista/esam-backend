@@ -8,14 +8,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class Usuario {
 
@@ -38,17 +41,14 @@ public class Usuario {
 
     // Datos de credenciales
 
-    @NotBlank 
-    @Size(max=50)
-    @Column(nullable = false, unique = true, length = 50)
-    private String nombreUsuario;
-
-    @NotBlank 
-    @Size(max=50)
-    @Column(nullable = false, unique = true, length = 50)
+    @NotBlank
+    @Email
+    @Size(max = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String correo;
 
-
+    @NotBlank
+    @Column(nullable = false)
     private String password;
 
     // Muchos usuarios pueden tener un rol

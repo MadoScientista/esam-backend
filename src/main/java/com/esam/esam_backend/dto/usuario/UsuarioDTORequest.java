@@ -42,14 +42,11 @@ public class UsuarioDTORequest {
     private Long telefono;
 
     @NotBlank
-    @Size(max = 255)
-    private String nombreUsuario;
-
-    @NotBlank
     @Email
     @Size(max = 100)
     private String correo;
 
+    @NotBlank
     private String password;
 
     @NotNull

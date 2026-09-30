@@ -68,15 +68,15 @@ public class UsuarioController {
 
     // Confirmar login
     @PostMapping("/login")
-    public ResponseEntity<UsuarioDTOLoginResponse> login(@RequestBody UsuarioDTOLogin login) {
+    public ResponseEntity<UsuarioDTOLoginResponse> login(@RequestBody @Valid UsuarioDTOLogin login) {
 
-        boolean loggin = usuarioService.confirmarLogin(login.getNombreUsuario(), login.getPassword());
+        boolean loggin = usuarioService.confirmarLogin(login.getCorreo(), login.getPassword());
 
         UsuarioDTOLoginResponse response = new UsuarioDTOLoginResponse();
         response.setLoggin(loggin);
 
         if (loggin) {
-            Usuario usuario = usuarioService.obtenerPorNombreUsuario(login.getNombreUsuario());
+            Usuario usuario = usuarioService.obtenerPorCorreo(login.getCorreo());
             response.setUsuario(usuarioMapper.toDTO(usuario));
         }
 

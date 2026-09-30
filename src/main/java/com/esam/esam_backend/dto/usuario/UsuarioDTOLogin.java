@@ -1,5 +1,8 @@
 package com.esam.esam_backend.dto.usuario;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -7,6 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UsuarioDTOLogin {
 
-    private String nombreUsuario;
+    @NotBlank
+    @Email
+    @Size(max = 100)
+    private String correo;
+
+    @NotBlank
     private String password;
 }

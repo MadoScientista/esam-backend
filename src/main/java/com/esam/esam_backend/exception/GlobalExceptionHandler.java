@@ -45,6 +45,83 @@ public class GlobalExceptionHandler {
         return respuesta(HttpStatus.CONFLICT, "CONFLICTO_STOCK", exception.getMessage(), request);
     }
 
+    @ExceptionHandler(ComunaNoEncontradaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarComunaNoEncontrada(
+            ComunaNoEncontradaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.NOT_FOUND, "COMUNA_NO_ENCONTRADA", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ComunaInvalidaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarComunaInvalida(
+            ComunaInvalidaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.BAD_REQUEST, "COMUNA_INVALIDA", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ComunaConUsuariosException.class)
+    public ResponseEntity<ApiErrorResponse> manejarComunaConUsuarios(
+            ComunaConUsuariosException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "COMUNA_CON_USUARIOS", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(MarcaNoEncontradaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarMarcaNoEncontrada(
+            MarcaNoEncontradaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.NOT_FOUND, "MARCA_NO_ENCONTRADA", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(MarcaConProductosException.class)
+    public ResponseEntity<ApiErrorResponse> manejarMarcaConProductos(
+            MarcaConProductosException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "MARCA_CON_PRODUCTOS", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(RegionNoEncontradaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarRegionNoEncontrada(
+            RegionNoEncontradaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.NOT_FOUND, "REGION_NO_ENCONTRADA", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(RegionConDependenciasException.class)
+    public ResponseEntity<ApiErrorResponse> manejarRegionConDependencias(
+            RegionConDependenciasException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "REGION_CON_DEPENDENCIAS", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(RolUsuarioNoEncontradaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarRolUsuarioNoEncontrado(
+            RolUsuarioNoEncontradaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.NOT_FOUND, "ROL_USUARIO_NO_ENCONTRADO", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(RolUsuarioConUsuariosException.class)
+    public ResponseEntity<ApiErrorResponse> manejarRolUsuarioConUsuarios(
+            RolUsuarioConUsuariosException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "ROL_USUARIO_CON_USUARIOS", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(UsuarioNoEncontradaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarUsuarioNoEncontrado(
+            UsuarioNoEncontradaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.NOT_FOUND, "USUARIO_NO_ENCONTRADO", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(UsuarioInvalidaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarUsuarioInvalido(
+            UsuarioInvalidaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.BAD_REQUEST, "USUARIO_INVALIDO", exception.getMessage(), request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> manejarValidacion(
             MethodArgumentNotValidException exception,

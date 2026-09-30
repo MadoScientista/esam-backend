@@ -22,4 +22,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>{
 
     // Productos según su nombre
     List<Producto> findByNombreContaining(String nombre);
+
+    // Cantidad de productos asociados a una marca
+    long countByMarcaIdMarca(Long idMarca);
 }

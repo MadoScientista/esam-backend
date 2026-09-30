@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import com.esam.esam_backend.dto.marca.MarcaDTO;
+import com.esam.esam_backend.dto.marca.MarcaDTORequest;
 import com.esam.esam_backend.model.Marca;
 
 @Component 
@@ -22,5 +23,11 @@ public class MarcaMapper {
         return marcas.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Marca toEntity(MarcaDTORequest request) {
+        Marca marca = new Marca();
+        marca.setNombre(request.getNombre());
+        return marca;
     }
 }

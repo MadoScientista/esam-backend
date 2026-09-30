@@ -133,9 +133,9 @@ public class ProductoController {
 
     // Borrar un producto
     @DeleteMapping("/{sku}")
-    public ResponseEntity<Producto> borrar(@PathVariable Long sku) {
+    public ResponseEntity<Void> borrar(@PathVariable Long sku) {
         
-        Producto p = productoService.borrar(sku);
+        productoService.borrar(sku);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

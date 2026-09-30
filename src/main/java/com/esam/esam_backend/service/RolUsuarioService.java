@@ -5,8 +5,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.esam.esam_backend.dto.rolUsuario.RolUsuarioDTORequest;
+import com.esam.esam_backend.exception.RolUsuarioConUsuariosException;
+import com.esam.esam_backend.exception.RolUsuarioNoEncontradaException;
+import com.esam.esam_backend.mapper.RolUsuarioMapper;
 import com.esam.esam_backend.model.RolUsuario;
 import com.esam.esam_backend.repository.RolUsuarioRepository;
+import com.esam.esam_backend.repository.UsuarioRepository;
 
 @Service
 public class RolUsuarioService {
@@ -14,10 +19,15 @@ public class RolUsuarioService {
     @Autowired
     private RolUsuarioRepository rRepo;
 
+    @Autowired
+    private UsuarioRepository uRepo;
+
+    @Autowired
+    private RolUsuarioMapper rMapper;
+
     // Obtener según su id
     public RolUsuario obtenerPorId(Long id) {
-        return rRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rol de usuario no encontrado con id: " + id));
+        return rRepo.findById(id).orElse(null);
     }
 
     // Obtener todos
@@ -26,20 +36,40 @@ public class RolUsuarioService {
     }
 
     // Guardar
-    public RolUsuario guardar(RolUsuario rol) {
-        return rRepo.save(rol);
+    public RolUsuario guardar(RolUsuarioDTORequest request) {
+        return rRepo.save(rMapper.toEntity(request));
     }
 
     // Editar
-    public RolUsuario editar(Long id, RolUsuario datos) {
-        RolUsuario rol = obtenerPorId(id);
-        rol.setNombre(datos.getNombre());
+    public RolUsuario editar(Long id, RolUsuarioDTORequest request) {
+        RolUsuario rol = obtenerRol(id);
+
+        rol.setNombre(request.getNombre());
+
         return rRepo.save(rol);
     }
 
     // Borrar
     public void borrar(Long id) {
-        RolUsuario rol = obtenerPorId(id);
+        RolUsuario rol = obtenerRol(id);
+
+        long usuariosAsociados = uRepo.countByRolUsuarioIdRolUsuario(id);
+
+        if (usuariosAsociados > 0) {
+            throw new RolUsuarioConUsuariosException(
+                    "El rol " + id + " tiene " + usuariosAsociados + " usuario(s) asociado(s)");
+        }
+
         rRepo.delete(rol);
+    }
+
+    private RolUsuario obtenerRol(Long id) {
+        RolUsuario rol = obtenerPorId(id);
+
+        if (rol == null) {
+            throw new RolUsuarioNoEncontradaException("No existe un rol de usuario con id " + id);
+        }
+
+        return rol;
     }
 }

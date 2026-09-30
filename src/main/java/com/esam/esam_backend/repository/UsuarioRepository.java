@@ -17,4 +17,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 
     // Cantidad de usuarios asociados a una comuna
     long countByComunaIdComuna(Long idComuna);
+
+    // Cantidad de usuarios asociados a un rol
+    long countByRolUsuarioIdRolUsuario(Long idRolUsuario);
 }

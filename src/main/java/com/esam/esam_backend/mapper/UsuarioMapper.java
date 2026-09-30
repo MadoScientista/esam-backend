@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.esam.esam_backend.dto.comuna.ComunaDTO;
 import com.esam.esam_backend.dto.region.RegionDTO;
-import com.esam.esam_backend.dto.rolusuario.RolUsuarioDTO;
+import com.esam.esam_backend.dto.rolUsuario.RolUsuarioDTO;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOResponse;
 import com.esam.esam_backend.model.Usuario;
 

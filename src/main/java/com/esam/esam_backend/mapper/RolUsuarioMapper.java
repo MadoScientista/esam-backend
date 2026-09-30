@@ -5,7 +5,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.esam.esam_backend.dto.rolusuario.RolUsuarioDTO;
+import com.esam.esam_backend.dto.rolUsuario.RolUsuarioDTO;
+import com.esam.esam_backend.dto.rolUsuario.RolUsuarioDTORequest;
 import com.esam.esam_backend.model.RolUsuario;
 
 @Component 
@@ -22,5 +23,11 @@ public class RolUsuarioMapper {
         return roles.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public RolUsuario toEntity(RolUsuarioDTORequest request) {
+        RolUsuario rol = new RolUsuario();
+        rol.setNombre(request.getNombre());
+        return rol;
     }
 }

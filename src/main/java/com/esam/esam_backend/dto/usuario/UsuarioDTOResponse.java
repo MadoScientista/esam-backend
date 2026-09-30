@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import com.esam.esam_backend.dto.comuna.ComunaDTO;
 import com.esam.esam_backend.dto.region.RegionDTO;
-import com.esam.esam_backend.dto.rolusuario.RolUsuarioDTO;
+import com.esam.esam_backend.dto.rolUsuario.RolUsuarioDTO;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -8,7 +8,7 @@ import com.esam.esam_backend.model.Region;
 import com.esam.esam_backend.model.RolUsuario;
 import com.esam.esam_backend.model.Usuario;
 
-@Component 
+@Component
 public class UsuarioDTORequestMapper {
 
     public Usuario toEntity(UsuarioDTORequest dto, RolUsuario rol, Region region, Comuna comuna) {
@@ -23,29 +23,9 @@ public class UsuarioDTORequestMapper {
         usuario.setTelefono(dto.getTelefono());
         usuario.setNombreUsuario(dto.getNombreUsuario());
         usuario.setCorreo(dto.getCorreo());
-        usuario.setPassword(dto.getPassword());
         usuario.setRolUsuario(rol);
         usuario.setRegion(region);
         usuario.setComuna(comuna);
         return usuario;
-    }
-
-    public UsuarioDTORequest toDTO(Usuario usuario) {
-        UsuarioDTORequest dto = new UsuarioDTORequest();
-        dto.setNombres(usuario.getNombres());
-        dto.setAPaterno(usuario.getAPaterno());
-        dto.setAMaterno(usuario.getAMaterno());
-        dto.setRut(usuario.getRut());
-        dto.setDv(usuario.getDv());
-        dto.setFechaNacimiento(usuario.getFechaNacimiento());
-        dto.setDireccion(usuario.getDireccion());
-        dto.setTelefono(usuario.getTelefono());
-        dto.setNombreUsuario(usuario.getNombreUsuario());
-        dto.setCorreo(usuario.getCorreo());
-        dto.setPassword(usuario.getPassword());
-        dto.setIdRolUsuario(usuario.getRolUsuario().getIdRolUsuario());
-        dto.setIdRegion(usuario.getRegion().getIdRegion());
-        dto.setIdComuna(usuario.getComuna().getIdComuna());
-        return dto;
     }
 }

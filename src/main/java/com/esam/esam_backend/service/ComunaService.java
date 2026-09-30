@@ -2,15 +2,19 @@ package com.esam.esam_backend.service;
 
 import java.util.List;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.esam.esam_backend.dto.comuna.ComunaDTORequest;
+import com.esam.esam_backend.exception.ComunaConUsuariosException;
+import com.esam.esam_backend.exception.ComunaInvalidaException;
+import com.esam.esam_backend.exception.ComunaNoEncontradaException;
+import com.esam.esam_backend.mapper.ComunaMapper;
 import com.esam.esam_backend.model.Comuna;
 import com.esam.esam_backend.model.Region;
 import com.esam.esam_backend.repository.ComunaRepository;
 import com.esam.esam_backend.repository.RegionRepository;
+import com.esam.esam_backend.repository.UsuarioRepository;
 
 @Service
 public class ComunaService {
@@ -18,51 +22,33 @@ public class ComunaService {
     @Autowired
     private ComunaRepository cRepo;
 
-    @Autowired 
+    @Autowired
     private RegionRepository rRepo;
-    
 
-    // Obtener según su id
+    @Autowired
+    private UsuarioRepository uRepo;
+
+    @Autowired
+    private ComunaMapper cMapper;
+
     public Comuna obtenerPorId(Long id) {
         return cRepo.findById(id).orElse(null);
     }
 
-    // Obtener todos
     public List<Comuna> obtenerTodos() {
         return cRepo.findAll();
     }
 
     // Guardar
-    public Comuna guardar(Comuna comuna) {
-        return cRepo.save(comuna);
-    }
-
     public Comuna guardar(ComunaDTORequest request) {
-        if(rRepo.existsById(request.getIdRegion())){
-
-            Comuna comuna = new Comuna();
-            comuna.setRegion(rRepo.findById(request.getIdRegion()).get());
-            return cRepo.save(comuna);
-        }
-
-        return null;
+        Region region = obtenerRegion(request.getIdRegion());
+        return cRepo.save(cMapper.toEntity(request, region));
     }
 
     // Editar
-    public Comuna editar(Long id, Comuna datos) {
-        Comuna comuna = obtenerPorId(id);
-        comuna.setNombre(datos.getNombre());
-        comuna.setRegion(datos.getRegion());
-        return cRepo.save(comuna);
-    }
-
-    public Comuna editar(Long id, ComunaDTORequest request){
-        Comuna comuna = obtenerPorId(id);
-        Region region = rRepo.findById(request.getIdRegion()).orElse(null);
-
-        if(region == null){
-            return null;
-        }
+    public Comuna editar(Long id, ComunaDTORequest request) {
+        Comuna comuna = obtenerComuna(id);
+        Region region = obtenerRegion(request.getIdRegion());
 
         comuna.setNombre(request.getNombre());
         comuna.setRegion(region);
@@ -71,14 +57,29 @@ public class ComunaService {
     }
 
     // Borrar
-    public boolean delete(Long id) {
-        Comuna comuna = obtenerPorId(id);
-        
-        if(comuna == null){
-            return false;
+    public void borrar(Long id) {
+        Comuna comuna = obtenerComuna(id);
+
+        long usuariosAsociados = uRepo.countByComunaIdComuna(id);
+
+        if (usuariosAsociados > 0) {
+            throw new ComunaConUsuariosException(
+                    "La comuna " + id + " tiene " + usuariosAsociados + " usuario(s) asociado(s)");
         }
-        
+
         cRepo.delete(comuna);
-        return true;
+    }
+
+    private Comuna obtenerComuna(Long id) {
+        Comuna comuna = obtenerPorId(id);
+        if (comuna == null) {
+            throw new ComunaNoEncontradaException("No existe una comuna con id " + id);
+        }
+        return comuna;
+    }
+
+    private Region obtenerRegion(Long idRegion) {
+        return rRepo.findById(idRegion)
+                .orElseThrow(() -> new ComunaInvalidaException("No existe una región con id " + idRegion));
     }
 }

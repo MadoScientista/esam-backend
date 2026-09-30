@@ -52,9 +52,6 @@ public class ComunaController {
 
         List<ComunaDTO> dtoList = cMapper.toDTOList(comunaService.obtenerTodos());
 
-        if(dtoList.isEmpty()){
-            return ResponseEntity.noContent().build();
-        }
         return ResponseEntity.ok(dtoList);
     }
 
@@ -63,10 +60,6 @@ public class ComunaController {
     public ResponseEntity<ComunaDTO> guardar(@RequestBody @Valid ComunaDTORequest request) {
         
         Comuna comuna = comunaService.guardar(request);
-
-        if(comuna == null){
-            return ResponseEntity.badRequest().build();
-        }
 
         ComunaDTO dto = cMapper.toDTO(comuna);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
@@ -77,10 +70,6 @@ public class ComunaController {
     public ResponseEntity<ComunaDTO> editar(@PathVariable Long id, @RequestBody @Valid ComunaDTORequest request) {
         
         Comuna comuna = comunaService.editar(id, request);
-        
-        if(comuna == null){
-            return ResponseEntity.badRequest().build();
-        }
 
         ComunaDTO dto = cMapper.toDTO(comuna);
         return ResponseEntity.ok(dto);
@@ -88,12 +77,10 @@ public class ComunaController {
 
     // Borrar una comuna
     @DeleteMapping("/{id}")
-    public ResponseEntity<ComunaDTO> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> borrar(@PathVariable Long id) {
         
-        if(comunaService.delete(id)){
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
+        comunaService.borrar(id);
 
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -6,7 +6,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import com.esam.esam_backend.dto.comuna.ComunaDTO;
+import com.esam.esam_backend.dto.comuna.ComunaDTORequest;
 import com.esam.esam_backend.model.Comuna;
+import com.esam.esam_backend.model.Region;
 
 @Component 
 public class ComunaMapper {
@@ -22,5 +24,12 @@ public class ComunaMapper {
         return comunas.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Comuna toEntity(ComunaDTORequest request, Region region) {
+        Comuna comuna = new Comuna();
+        comuna.setNombre(request.getNombre());
+        comuna.setRegion(region);
+        return comuna;
     }
 }

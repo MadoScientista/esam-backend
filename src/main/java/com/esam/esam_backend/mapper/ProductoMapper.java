@@ -20,7 +20,7 @@ public class ProductoMapper {
 
     private final MarcaRepository marcaRepository;
 
-    private final ProductImageMapper productImageMapper;
+    private final ImagenProductoMapper imagenProductoMapper;
 
 
     public ProductoDTOResponse toDTO(Producto producto) {
@@ -31,7 +31,7 @@ public class ProductoMapper {
         dto.setMarca(producto.getMarca().getNombre());
         dto.setPrecio(producto.getPrecio());
         dto.setStock(producto.getStock());
-        dto.setImagenes(productImageMapper.toDTOList(producto.getImagenes()));
+        dto.setImagenes(imagenProductoMapper.toDTOList(producto.getImagenes()));
         return dto;
     }
 

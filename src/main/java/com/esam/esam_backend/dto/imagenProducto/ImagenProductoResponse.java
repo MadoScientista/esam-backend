@@ -1,4 +1,4 @@
-package com.esam.esam_backend.dto.productImage;
+package com.esam.esam_backend.dto.imagenProducto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class ProductImageResponse {
+public class ImagenProductoResponse {
 
     @Min(value = 1)
-    private Long idProductImage;
+    private Long idImagenProducto;
 
     @NotBlank
     private String url;
 
-    private boolean principal;
+    private Integer orden;
 }

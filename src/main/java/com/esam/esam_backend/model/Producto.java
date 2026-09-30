@@ -41,7 +41,7 @@ public class Producto {
     // Un producto puede tener muchas imágenes
     // Se inicializa vacía para que un Producto recién creado no devuelva null
     @OneToMany(mappedBy = "producto")
-    private List<ProductImage> imagenes = new ArrayList<>();
+    private List<ImagenProducto> imagenes = new ArrayList<>();
     
     // Varios productos pueden tener una marca
     @ManyToOne(fetch = FetchType.LAZY)

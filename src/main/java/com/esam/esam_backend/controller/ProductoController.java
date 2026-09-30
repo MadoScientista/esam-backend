@@ -13,11 +13,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.esam.esam_backend.dto.imagenProducto.ImagenProductoResponse;
 import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.dto.producto.ProductoDTOResponse;
+import com.esam.esam_backend.mapper.ImagenProductoMapper;
 import com.esam.esam_backend.mapper.ProductoMapper;
+import com.esam.esam_backend.model.ImagenProducto;
 import com.esam.esam_backend.model.Producto;
+import com.esam.esam_backend.service.ImagenProductoService;
 import com.esam.esam_backend.service.ProductoService;
 
 import jakarta.validation.Valid;
@@ -29,14 +34,15 @@ import lombok.RequiredArgsConstructor;
 public class ProductoController {
 
     private final ProductoService productoService;
-
     private final ProductoMapper pMapper;
+    private final ImagenProductoService imagenProductoService;
+    private final ImagenProductoMapper ipMapper;
 
     // Obtener todos los productos
     @GetMapping()
     public ResponseEntity<List<ProductoDTOResponse>> obtenerProductos(){
         
-        List<Producto> productos = productoService.obteneProductos();
+        List<Producto> productos = productoService.obtenerProductos();
         List<ProductoDTOResponse> dtoList = pMapper.toDTOList(productos);
 
         return ResponseEntity.ok(dtoList);
@@ -107,6 +113,51 @@ public class ProductoController {
         Producto p = productoService.editar(sku, request);
         ProductoDTOResponse dto = pMapper.toDTO(p);
         return ResponseEntity.ok(dto);
+    }
+
+    // Subir una imagen a un producto
+    @PostMapping("/{sku}/imagenes")
+    public ResponseEntity<ImagenProductoResponse> subirImagen(
+            @PathVariable Long sku,
+            @RequestParam("file") MultipartFile file) {
+
+        ImagenProducto imagen = imagenProductoService.guardar(sku, file);
+        
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ipMapper.toDTO(imagen));
+    }
+
+    // Todas las imágenes de un producto, la portada y luego por posición
+    @GetMapping("/{sku}/imagenes")
+    public ResponseEntity<List<ImagenProductoResponse>> obtenerImagenes(@PathVariable Long sku) {
+
+        List<ImagenProducto> imagenes = imagenProductoService.obtenerPorProducto(sku);
+
+        if (imagenes == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(ipMapper.toDTOList(imagenes));
+    }
+
+    // Borrar una imagen de un producto
+    @DeleteMapping("/{sku}/imagenes/{idImagenProducto}")
+    public ResponseEntity<Void> borrarImagen(
+            @PathVariable Long sku,
+            @PathVariable Long idImagenProducto) {
+
+        imagenProductoService.borrar(sku, idImagenProducto);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    // Borrar todas las imágenes de un producto, sin borrar el producto
+    @DeleteMapping("/{sku}/imagenes")
+    public ResponseEntity<Void> borrarTodasLasImagenes(@PathVariable Long sku) {
+
+        imagenProductoService.borrarTodas(sku);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     // Setear stock a un valor específico

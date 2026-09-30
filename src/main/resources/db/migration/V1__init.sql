@@ -71,24 +71,24 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
--- Table `esam_db`.`product_image`
+-- Table `esam_db`.`imagen_producto`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `esam_db`.`product_image` (
-  `id_product_image` BIGINT NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `esam_db`.`imagen_producto` (
+  `id_imagen_producto` BIGINT NOT NULL AUTO_INCREMENT,
   `url` VARCHAR(500) NOT NULL,
-  `public_id` VARCHAR(255) NOT NULL,
+  `id_publico` VARCHAR(255) NOT NULL,
   `sku` BIGINT NOT NULL,
   `principal` BOOLEAN NOT NULL DEFAULT FALSE,
   -- Generada: vale el sku si la imagen es principal, NULL si no.
   -- El indice UNIQUE de abajo tolera los NULL repetidos, asi que solo puede
   -- existir una fila con principal = TRUE por producto.
-  `principal_key` BIGINT
+  `clave_principal` BIGINT
     GENERATED ALWAYS AS (IF(`principal`, `sku`, NULL)) STORED,
-  PRIMARY KEY (`id_product_image`),
-  UNIQUE INDEX `UK_product_image_public_id` (`public_id` ASC) VISIBLE,
-  UNIQUE INDEX `UK_product_image_principal` (`principal_key` ASC) VISIBLE,
-  INDEX `IDX_product_image_sku` (`sku` ASC) VISIBLE,
-  CONSTRAINT `FK_product_image_producto`
+  PRIMARY KEY (`id_imagen_producto`),
+  UNIQUE INDEX `UK_imagen_producto_id_publico` (`id_publico` ASC) VISIBLE,
+  UNIQUE INDEX `UK_imagen_producto_principal` (`clave_principal` ASC) VISIBLE,
+  INDEX `IDX_imagen_producto_sku` (`sku` ASC) VISIBLE,
+  CONSTRAINT `FK_imagen_producto_producto`
     FOREIGN KEY (`sku`)
     REFERENCES `esam_db`.`producto` (`sku`))
 ENGINE = InnoDB
@@ -115,20 +115,20 @@ CREATE TABLE IF NOT EXISTS `esam_db`.`usuario` (
   `id_usuario` BIGINT NOT NULL AUTO_INCREMENT,
   `a_materno` VARCHAR(255) NULL DEFAULT NULL,
   `a_paterno` VARCHAR(255) NULL DEFAULT NULL,
-  `nombre_usuario` VARCHAR(255) NULL DEFAULT NULL,
   `nombres` VARCHAR(255) NULL DEFAULT NULL,
   `rut` BIGINT NULL DEFAULT NULL,
   `dv` VARCHAR(1) NULL DEFAULT NULL,
   `direccion` VARCHAR(300) NULL DEFAULT NULL,
   `fecha_nacimiento` DATE NULL DEFAULT NULL,
   `telefono` BIGINT NULL DEFAULT NULL,
-  `password` VARCHAR(255) NULL DEFAULT NULL,
-  `correo` VARCHAR(100) NULL DEFAULT NULL,
+  `password` VARCHAR(255) NOT NULL,
+  `correo` VARCHAR(100) NOT NULL,
   `id_rol_usuario` BIGINT NULL DEFAULT NULL,
   `id_comuna` BIGINT NULL DEFAULT NULL,
   `id_region` BIGINT NULL DEFAULT NULL,
   PRIMARY KEY (`id_usuario`),
   UNIQUE INDEX `UK_usuario_rut` (`rut` ASC) VISIBLE,
+  UNIQUE INDEX `UK_usuario_correo` (`correo` ASC) VISIBLE,
   INDEX `IDX_usuario_id_rol_usuario` (`id_rol_usuario` ASC) VISIBLE,
   INDEX `IDX_usuario_id_comuna` (`id_comuna` ASC) VISIBLE,
   INDEX `IDX_usuario_id_region` (`id_region` ASC) VISIBLE,

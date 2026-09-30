@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.exception.ConflictoStockException;
 import com.esam.esam_backend.exception.ProductoConImagenesException;
 import com.esam.esam_backend.exception.ProductoInvalidoException;
-import com.esam.esam_backend.exception.ProductoNoEncontradoException;
 import com.esam.esam_backend.mapper.ProductoMapper;
 import com.esam.esam_backend.model.Marca;
 import com.esam.esam_backend.model.Producto;
@@ -25,18 +25,17 @@ public class ProductoService {
 
     private final ProductoMapper pMapper;
 
-    private final ProductImageService productImageService;
+    private final ImagenProductoService imagenProductoService;
 
 
     // Obtener todos los productos
-    public List<Producto> obteneProductos(){
+    public List<Producto> obtenerProductos(){
         return pRepo.findAllConImagenes();
     }
 
     // Obtener según su id
     public Producto obtenerPorId(Long sku) {
-        return pRepo.findByIdConImagenes(sku)
-                .orElseThrow(() -> new ProductoNoEncontradoException("No existe un producto con SKU " + sku));
+        return pRepo.findById(sku).orElse(null);
     }
 
     // Obtener según su marca
@@ -94,7 +93,7 @@ public class ProductoService {
     public Producto borrar(Long sku) {
         Producto producto = obtenerPorId(sku);
 
-        long imagenesAsociadas = productImageService.contarPorProducto(sku);
+        long imagenesAsociadas = imagenProductoService.contarPorProducto(sku);
 
         if (imagenesAsociadas > 0) {
             throw new ProductoConImagenesException(
@@ -106,10 +105,11 @@ public class ProductoService {
     }
 
     // Borrar el producto junto con todas sus imagenes
+    @Transactional
     public Producto borrarEnCascada(Long sku) {
         Producto producto = obtenerPorId(sku);
 
-        productImageService.borrarTodas(sku);
+        imagenProductoService.borrarTodas(sku);
         pRepo.delete(producto);
 
         return producto;

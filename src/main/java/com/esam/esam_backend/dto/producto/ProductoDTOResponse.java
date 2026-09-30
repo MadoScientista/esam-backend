@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.esam.esam_backend.dto.productImage.ProductImageResponse;
+import com.esam.esam_backend.dto.imagenProducto.ImagenProductoResponse;
 
 @Data
 @NoArgsConstructor
@@ -36,6 +36,6 @@ public class ProductoDTOResponse {
     @Min(value = 0)
     private Long stock;
 
-    // Un producto puede tener muchas imágenes, la principal viene primero
-    private List<ProductImageResponse> imagenes;
+    // Un producto puede tener muchas imágenes, ordenadas por posición
+    private List<ImagenProductoResponse> imagenes;
 }

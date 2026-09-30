@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 @Entity 
 @Data 
 @NoArgsConstructor 
-public class ProductImage {
+public class ImagenProducto {
 
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idProductImage;
+    private Long idImagenProducto;
 
     // URL pública de la imagen
     @Column(nullable = false, length = 500)
@@ -26,13 +26,12 @@ public class ProductImage {
 
     // Identificador de Cloudinary necesario para borrar la imagen
     @Column(nullable = false, unique = true)
-    private String publicId;
+    private String idPublico;
 
-    // Solo una imagen por producto puede ser la principal.
-    // La garantía de unicidad la impone el índice UK_product_image_principal
-    // sobre la columna generada principal_key.
+    // Posición dentro de la galería del producto. 0 es la primera.
+    // El listado ordena por orden y, a igualdad, por idImagenProducto.
     @Column(nullable = false)
-    private boolean principal;
+    private Integer orden;
 
 
     // Relación muchas imágenes a un producto

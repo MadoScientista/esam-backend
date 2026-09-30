@@ -10,12 +10,12 @@ import com.esam.esam_backend.model.Producto;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long>{
 
-    // Todos los productos con sus imagenes y su marca, la principal primero
+        // Todos los productos con sus imagenes y su marca, por orden de galería
     @Query("""
             select distinct p from Producto p
             left join fetch p.imagenes i
             left join fetch p.marca
-            order by p.sku, i.principal desc, i.idProductImage
+            order by p.sku, i.orden, i.idImagenProducto
             """)
     List<Producto> findAllConImagenes();
 
@@ -25,7 +25,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>{
             left join fetch p.imagenes i
             left join fetch p.marca
             where p.sku = :sku
-            order by i.principal desc, i.idProductImage
+            order by i.orden, i.idImagenProducto
             """)
     Optional<Producto> findByIdConImagenes(Long sku);
 

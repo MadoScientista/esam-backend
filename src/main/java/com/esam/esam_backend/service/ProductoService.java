@@ -3,7 +3,6 @@ package com.esam.esam_backend.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.esam.esam_backend.dto.producto.ProductoDTORequest;
@@ -16,17 +15,17 @@ import com.esam.esam_backend.model.Marca;
 import com.esam.esam_backend.model.Producto;
 import com.esam.esam_backend.repository.ProductoRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class ProductoService {
 
-    @Autowired
-    private ProductoRepository pRepo;
+    private final ProductoRepository pRepo;
 
-    @Autowired
-    private ProductoMapper pMapper;
+    private final ProductoMapper pMapper;
 
-    @Autowired
-    private ProductImageService productImageService;
+    private final ProductImageService productImageService;
 
 
     // Obtener todos los productos

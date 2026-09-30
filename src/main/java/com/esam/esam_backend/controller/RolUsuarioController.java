@@ -2,7 +2,7 @@ package com.esam.esam_backend.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,16 +21,16 @@ import com.esam.esam_backend.model.RolUsuario;
 import com.esam.esam_backend.service.RolUsuarioService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor 
 @RestController
 @RequestMapping("/api/roles")
 public class RolUsuarioController {
 
-    @Autowired
-    private RolUsuarioService rolUsuarioService;
+    private final RolUsuarioService rolUsuarioService;
 
-    @Autowired
-    private RolUsuarioMapper rolUsuarioMapper;
+    private final RolUsuarioMapper rolUsuarioMapper;
 
     // Obtener un rol por su id
     @GetMapping("/{id}")

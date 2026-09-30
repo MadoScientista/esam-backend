@@ -2,7 +2,6 @@ package com.esam.esam_backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.esam.esam_backend.dto.marca.MarcaDTORequest;
@@ -13,17 +12,17 @@ import com.esam.esam_backend.model.Marca;
 import com.esam.esam_backend.repository.MarcaRepository;
 import com.esam.esam_backend.repository.ProductoRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class MarcaService {
 
-    @Autowired
-    private MarcaRepository mRepo;
+    private final MarcaRepository mRepo;
 
-    @Autowired
-    private ProductoRepository pRepo;
+    private final ProductoRepository pRepo;
 
-    @Autowired
-    private MarcaMapper mMapper;
+    private final MarcaMapper mMapper;
 
     // Obtener según su id
     public Marca obtenerPorId(Long id) {

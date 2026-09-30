@@ -2,7 +2,6 @@ package com.esam.esam_backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.esam.esam_backend.dto.rolUsuario.RolUsuarioDTORequest;
@@ -13,17 +12,17 @@ import com.esam.esam_backend.model.RolUsuario;
 import com.esam.esam_backend.repository.RolUsuarioRepository;
 import com.esam.esam_backend.repository.UsuarioRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class RolUsuarioService {
 
-    @Autowired
-    private RolUsuarioRepository rRepo;
+    private final RolUsuarioRepository rRepo;
 
-    @Autowired
-    private UsuarioRepository uRepo;
+    private final UsuarioRepository uRepo;
 
-    @Autowired
-    private RolUsuarioMapper rMapper;
+    private final RolUsuarioMapper rMapper;
 
     // Obtener según su id
     public RolUsuario obtenerPorId(Long id) {

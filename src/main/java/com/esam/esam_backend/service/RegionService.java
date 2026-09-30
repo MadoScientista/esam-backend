@@ -2,7 +2,6 @@ package com.esam.esam_backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.esam.esam_backend.dto.region.RegionDTORequest;
@@ -14,20 +13,19 @@ import com.esam.esam_backend.repository.ComunaRepository;
 import com.esam.esam_backend.repository.RegionRepository;
 import com.esam.esam_backend.repository.UsuarioRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class RegionService {
 
-    @Autowired
-    private RegionRepository rRepo;
+    private final RegionRepository rRepo;
 
-    @Autowired
-    private ComunaRepository cRepo;
+    private final ComunaRepository cRepo;
 
-    @Autowired
-    private UsuarioRepository uRepo;
+    private final UsuarioRepository uRepo;
 
-    @Autowired
-    private RegionMapper rMapper;
+    private final RegionMapper rMapper;
 
     // Obtener según su id
     public Region obtenerPorId(Long id) {

@@ -2,7 +2,6 @@ package com.esam.esam_backend.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,16 +21,16 @@ import com.esam.esam_backend.model.Producto;
 import com.esam.esam_backend.service.ProductoService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor 
 @RestController
 @RequestMapping("/api/productos")
 public class ProductoController {
 
-    @Autowired
-    private ProductoService productoService;
+    private final ProductoService productoService;
 
-    @Autowired
-    private ProductoMapper pMapper;
+    private final ProductoMapper pMapper;
 
     // Obtener todos los productos
     @GetMapping()

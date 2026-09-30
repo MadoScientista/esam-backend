@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +21,9 @@ import com.esam.esam_backend.model.Producto;
 import com.esam.esam_backend.repository.ProductImageRepository;
 import com.esam.esam_backend.repository.ProductoRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class ProductImageService {
 
@@ -32,17 +34,13 @@ public class ProductImageService {
 
     private static final long TAMANO_MAXIMO = 5L * 1024 * 1024;
 
-    @Autowired
-    private Cloudinary cloudinary;
+    private final Cloudinary cloudinary;
 
-    @Autowired
-    private ProductImageRepository piRepo;
+    private final ProductImageRepository piRepo;
 
-    @Autowired
-    private ProductoRepository pRepo;
+    private final ProductoRepository pRepo;
 
-    @Autowired
-    private ProductImageMapper piMapper;
+    private final ProductImageMapper piMapper;
 
 
     // Guardar una imagen de un producto, subida a Cloudinary

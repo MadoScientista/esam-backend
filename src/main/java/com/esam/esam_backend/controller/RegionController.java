@@ -2,7 +2,7 @@ package com.esam.esam_backend.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,16 +22,16 @@ import com.esam.esam_backend.model.Region;
 import com.esam.esam_backend.service.RegionService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor 
 @RestController
 @RequestMapping("/api/regiones")
 public class RegionController {
 
-    @Autowired
-    private RegionService regionService;
+    private final RegionService regionService;
 
-    @Autowired
-    private RegionMapper rMapper;
+    private final RegionMapper rMapper;
 
     // Obtener una región por su id
     @GetMapping("/{id}")

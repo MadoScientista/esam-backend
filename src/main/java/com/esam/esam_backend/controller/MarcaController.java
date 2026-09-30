@@ -2,7 +2,6 @@ package com.esam.esam_backend.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,16 +20,16 @@ import com.esam.esam_backend.model.Marca;
 import com.esam.esam_backend.service.MarcaService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor 
 @RequestMapping("/api/marcas")
 public class MarcaController {
 
-    @Autowired
-    private MarcaService marcaService;
+    private final MarcaService marcaService;
 
-    @Autowired
-    private MarcaMapper mMapper;
+    private final MarcaMapper mMapper;
 
     // Obtener una marca por su id
     @GetMapping("/{id}")

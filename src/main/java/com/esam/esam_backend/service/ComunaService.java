@@ -2,7 +2,6 @@ package com.esam.esam_backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.esam.esam_backend.dto.comuna.ComunaDTORequest;
@@ -16,20 +15,19 @@ import com.esam.esam_backend.repository.ComunaRepository;
 import com.esam.esam_backend.repository.RegionRepository;
 import com.esam.esam_backend.repository.UsuarioRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class ComunaService {
 
-    @Autowired
-    private ComunaRepository cRepo;
+    private final ComunaRepository cRepo;
 
-    @Autowired
-    private RegionRepository rRepo;
+    private final RegionRepository rRepo;
 
-    @Autowired
-    private UsuarioRepository uRepo;
+    private final UsuarioRepository uRepo;
 
-    @Autowired
-    private ComunaMapper cMapper;
+    private final ComunaMapper cMapper;
 
     public Comuna obtenerPorId(Long id) {
         return cRepo.findById(id).orElse(null);

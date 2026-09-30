@@ -2,7 +2,6 @@ package com.esam.esam_backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,26 +18,23 @@ import com.esam.esam_backend.repository.RegionRepository;
 import com.esam.esam_backend.repository.RolUsuarioRepository;
 import com.esam.esam_backend.repository.UsuarioRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository uRepo;
+    private final UsuarioRepository uRepo;
 
-    @Autowired
-    private RolUsuarioRepository rRepo;
+    private final RolUsuarioRepository rRepo;
 
-    @Autowired
-    private RegionRepository regionRepo;
+    private final RegionRepository regionRepo;
 
-    @Autowired
-    private ComunaRepository cRepo;
+    private final ComunaRepository cRepo;
 
-    @Autowired
-    private UsuarioDTORequestMapper uMapper;
+    private final UsuarioDTORequestMapper uMapper;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     // Obtener usuario según su id
     public Usuario obtenerPorId(Long id) {

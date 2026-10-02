@@ -12,28 +12,30 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
 @NoArgsConstructor
-public class Comuna {
+@Setter
+public class Comuna{
 
-    @Id
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idComuna;
 
-    @Column(nullable = false, length = 25)
+    @Column(nullable = false, unique = true)
     private String nombre;
 
-    // Relación muchos a uno
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="idRegion")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "region_id", nullable = false)
     private Region region;
 
-    // Una comuna puede tener muchos usuarios
-    @OneToMany(mappedBy = "comuna")
-    private List<Usuario> usuarios = new ArrayList<>();
+    @OneToMany(mappedBy = "comuna", fetch = FetchType.LAZY)
+    private List<Direccion> direcciones = new ArrayList<>();
 
+    @OneToMany(mappedBy = "comuna", fetch = FetchType.LAZY)
+    private List<Usuario> usuarios = new ArrayList<>();
 }

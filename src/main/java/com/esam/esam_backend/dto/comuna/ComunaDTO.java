@@ -18,4 +18,8 @@ public class ComunaDTO {
     @NotBlank
     @Size(max = 25)
     private String nombre;
+
+    @NotNull
+    @Min(value = 1)
+    private Long idRegion;
 }

@@ -204,4 +204,26 @@ class GlobalExceptionHandlerTests {
         assertEquals("USUARIO_INVALIDO", response.getBody().code());
         assertEquals("/api/usuarios", response.getBody().path());
     }
+
+    @Test
+    void mapsPedidoNotFoundToNotFound() {
+        var requestPedido = new MockHttpServletRequest("GET", "/api/pedidos/12");
+        var response = handler.manejarPedidoNoEncontrado(
+                new PedidoNoEncontradoException("No existe un pedido con id 12"), requestPedido);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("PEDIDO_NO_ENCONTRADO", response.getBody().code());
+        assertEquals("/api/pedidos/12", response.getBody().path());
+    }
+
+    @Test
+    void mapsInvalidPedidoToBadRequest() {
+        var requestPedido = new MockHttpServletRequest("POST", "/api/pedidos");
+        var response = handler.manejarPedidoInvalido(
+                new PedidoInvalidoException("El carrito está vacío"), requestPedido);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("PEDIDO_INVALIDO", response.getBody().code());
+        assertEquals("/api/pedidos", response.getBody().path());
+    }
 }

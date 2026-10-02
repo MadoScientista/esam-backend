@@ -123,6 +123,18 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**")
             .hasRole("admin")
 
+            // Los clientes solo consultan sus pedidos desde el controlador;
+            // las consultas globales y cambios de estado son exclusivos de admin.
+            .requestMatchers(HttpMethod.GET,
+                "/api/pedidos/admin", "/api/pedidos/admin/**")
+            .hasRole("admin")
+            .requestMatchers(HttpMethod.PUT, "/api/pedidos/admin/**")
+            .hasRole("admin")
+            .requestMatchers(HttpMethod.GET, "/api/pedidos/**")
+            .authenticated()
+            .requestMatchers(HttpMethod.POST, "/api/pedidos")
+            .authenticated()
+
             .anyRequest()
             .authenticated()
         )

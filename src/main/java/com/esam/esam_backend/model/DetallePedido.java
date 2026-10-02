@@ -14,29 +14,32 @@ import lombok.Setter;
 
 @Entity
 @Getter
-@NoArgsConstructor
 @Setter
-public class ImagenProducto{
+@NoArgsConstructor
+public class DetallePedido {
 
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idImagenProducto;
-
-    // Identificador de Cloudinary necesario para borrar la imagen
-    @Column(nullable = false, unique = true)
-    private String idPublico;
-    
-    @Column(nullable = false, length = 500)
-    private String url;
-
-    @Column(length = 255)
-    private String textoAlternativo;
+    private Long idDetallePedido;
 
     @Column(nullable = false)
-    private Integer orden;
+    private String nombreProducto;
 
     @Column(nullable = false)
-    private Boolean principal = false;
+    private String skuProducto;
+
+    @Column(nullable = false)
+    private Long precioUnitario;
+
+    @Column(nullable = false)
+    private Integer cantidad;
+
+    @Column(nullable = false)
+    private Long subtotal;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "pedido_id", nullable = false)
+    private Pedido pedido;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "producto_id", nullable = false)

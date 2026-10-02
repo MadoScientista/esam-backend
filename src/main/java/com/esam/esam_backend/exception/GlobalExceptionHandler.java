@@ -98,6 +98,34 @@ public class GlobalExceptionHandler {
         return respuesta(HttpStatus.CONFLICT, "COMUNA_CON_USUARIOS", exception.getMessage(), request);
     }
 
+    @ExceptionHandler(DireccionNoEncontradaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarDireccionNoEncontrada(
+            DireccionNoEncontradaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.NOT_FOUND, "DIRECCION_NO_ENCONTRADA", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(DireccionInvalidaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarDireccionInvalida(
+            DireccionInvalidaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.BAD_REQUEST, "DIRECCION_INVALIDA", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(PedidoNoEncontradoException.class)
+    public ResponseEntity<ApiErrorResponse> manejarPedidoNoEncontrado(
+            PedidoNoEncontradoException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.NOT_FOUND, "PEDIDO_NO_ENCONTRADO", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(PedidoInvalidoException.class)
+    public ResponseEntity<ApiErrorResponse> manejarPedidoInvalido(
+            PedidoInvalidoException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.BAD_REQUEST, "PEDIDO_INVALIDO", exception.getMessage(), request);
+    }
+
     @ExceptionHandler(MarcaNoEncontradaException.class)
     public ResponseEntity<ApiErrorResponse> manejarMarcaNoEncontrada(
             MarcaNoEncontradaException exception,
@@ -110,6 +138,27 @@ public class GlobalExceptionHandler {
             MarcaConProductosException exception,
             HttpServletRequest request) {
         return respuesta(HttpStatus.CONFLICT, "MARCA_CON_PRODUCTOS", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(CategoriaNoEncontradaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarCategoriaNoEncontrada(
+            CategoriaNoEncontradaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.NOT_FOUND, "CATEGORIA_NO_ENCONTRADA", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(CategoriaConProductosException.class)
+    public ResponseEntity<ApiErrorResponse> manejarCategoriaConProductos(
+            CategoriaConProductosException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "CATEGORIA_CON_PRODUCTOS", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(CategoriaConSubcategoriasException.class)
+    public ResponseEntity<ApiErrorResponse> manejarCategoriaConSubcategorias(
+            CategoriaConSubcategoriasException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "CATEGORIA_CON_SUBCATEGORIAS", exception.getMessage(), request);
     }
 
     @ExceptionHandler(RegionNoEncontradaException.class)
@@ -176,6 +225,13 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
         return respuesta(HttpStatus.BAD_REQUEST, "ERROR_VALIDACION", message, request);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiErrorResponse> manejarArgumentoInvalido(
+            IllegalArgumentException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.BAD_REQUEST, "ARGUMENTO_INVALIDO", exception.getMessage(), request);
     }
 
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class})

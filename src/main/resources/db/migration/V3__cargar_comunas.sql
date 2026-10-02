@@ -1,17 +1,17 @@
 -- Carga de las 346 comunas de Chile, asociadas a su región.
 -- Los IDs de comuna se asignan con AUTO_INCREMENT 1..346 en el orden de inserción.
--- El id_region referencia los IDs generados por V2__cargar_regiones.sql (1..16).
+-- La region_id referencia los IDs generados por V2__cargar_regiones.sql (1..16).
 USE `esam_db`;
 
 -- Región 1: Arica y Parinacota (4)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Arica', 1),
 ('Camarones', 1),
 ('Putre', 1),
 ('General Lagos', 1);
 
 -- Región 2: Tarapacá (7)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Iquique', 2),
 ('Alto Hospicio', 2),
 ('Pozo Almonte', 2),
@@ -21,7 +21,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Pica', 2);
 
 -- Región 3: Antofagasta (9)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Antofagasta', 3),
 ('Mejillones', 3),
 ('Sierra Gorda', 3),
@@ -33,7 +33,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('María Elena', 3);
 
 -- Región 4: Atacama (9)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Copiapó', 4),
 ('Caldera', 4),
 ('Tierra Amarilla', 4),
@@ -45,7 +45,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Huasco', 4);
 
 -- Región 5: Coquimbo (15)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('La Serena', 5),
 ('Coquimbo', 5),
 ('Andacollo', 5),
@@ -63,7 +63,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Río Hurtado', 5);
 
 -- Región 6: Valparaíso (38)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Valparaíso', 6),
 ('Casablanca', 6),
 ('Concón', 6),
@@ -104,7 +104,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Villa Alemana', 6);
 
 -- Región 7: Metropolitana de Santiago (52)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Santiago', 7),
 ('Cerrillos', 7),
 ('Cerro Navia', 7),
@@ -159,7 +159,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Peñaflor', 7);
 
 -- Región 8: O'Higgins (33)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Rancagua', 8),
 ('Codegua', 8),
 ('Coinco', 8),
@@ -195,7 +195,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Santa Cruz', 8);
 
 -- Región 9: Maule (30)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Talca', 9),
 ('Constitución', 9),
 ('Curepto', 9),
@@ -228,7 +228,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Yerbas Buenas', 9);
 
 -- Región 10: Ñuble (21)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Chillán', 10),
 ('Bulnes', 10),
 ('Chillán Viejo', 10),
@@ -252,7 +252,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('San Nicolás', 10);
 
 -- Región 11: Biobío (33)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Concepción', 11),
 ('Coronel', 11),
 ('Chiguayante', 11),
@@ -288,7 +288,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Alto Biobío', 11);
 
 -- Región 12: La Araucanía (32)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Temuco', 12),
 ('Carahue', 12),
 ('Cunco', 12),
@@ -323,7 +323,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Victoria', 12);
 
 -- Región 13: Los Ríos (12)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Valdivia', 13),
 ('Corral', 13),
 ('Lanco', 13),
@@ -338,7 +338,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Río Bueno', 13);
 
 -- Región 14: Los Lagos (30)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Puerto Montt', 14),
 ('Calbuco', 14),
 ('Cochamó', 14),
@@ -371,7 +371,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Palena', 14);
 
 -- Región 15: Aysén (10)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Coyhaique', 15),
 ('Lago Verde', 15),
 ('Aysén', 15),
@@ -384,7 +384,7 @@ INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
 ('Río Ibáñez', 15);
 
 -- Región 16: Magallanes (11)
-INSERT INTO `comuna` (`nombre`, `id_region`) VALUES
+INSERT INTO `comuna` (`nombre`, `region_id`) VALUES
 ('Punta Arenas', 16),
 ('Laguna Blanca', 16),
 ('Río Verde', 16),

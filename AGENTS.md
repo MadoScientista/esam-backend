@@ -58,3 +58,9 @@ incrustan el valor que violó la restricción, así que loguear el stack trace d
 un `DataIntegrityViolationException` de MySQL filtra el dato duplicado
 (`Duplicate entry '<correo>' for key '...'`). Por eso los errores de base de
 datos se atienden con un mensaje genérico y sin volcar la excepción.
+
+## 5. Especificaciones
+
+La carpeta `especificaciones/` es la fuente de la verdad para los requisitos
+funcionales y el modelado del proyecto. Si el código o la documentación difieren
+de una especificación, se debe alinear el cambio con lo definido allí.

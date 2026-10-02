@@ -116,7 +116,7 @@ public class ProductoService {
     }
 
     // Setear stock a un valor específico
-    public Producto setearStock(Long sku, Long stock) {
+    public Producto setearStock(Long sku, Integer stock) {
         validarStock(stock);
         Producto producto = obtenerPorId(sku);
         producto.setStock(stock);
@@ -124,19 +124,19 @@ public class ProductoService {
     }
 
     // Disminuir stock en las unidades especificadas
-    public Producto disminuirStock(Long sku, Long unidades) {
+    public Producto disminuirStock(Long sku, Integer unidades) {
         validarUnidades(unidades);
         Producto producto = obtenerPorId(sku);
         if (unidades > producto.getStock()) {
             throw new ConflictoStockException("No hay stock suficiente. Stock actual: " + producto.getStock());
         }
-        Long nuevoStock = producto.getStock() - unidades;
+        Integer nuevoStock = producto.getStock() - unidades;
         producto.setStock(nuevoStock);
         return pRepo.save(producto);
     }
 
     // Aumentar stock en las unidades especificadas
-    public Producto aumentarStock(Long sku, Long unidades) {
+    public Producto aumentarStock(Long sku, Integer unidades) {
         validarUnidades(unidades);
         Producto producto = obtenerPorId(sku);
         if (producto.getStock() > Long.MAX_VALUE - unidades) {
@@ -146,7 +146,7 @@ public class ProductoService {
         return pRepo.save(producto);
     }
 
-    private void validarStock(Long valor) {
+    private void validarStock(Integer valor) {
         if (valor == null || valor < 0) {
             throw new ProductoInvalidoException("El stock debe ser un número entero positivo o cero");
         }
@@ -158,7 +158,7 @@ public class ProductoService {
         }
     }
 
-    private void validarUnidades(Long unidades) {
+    private void validarUnidades(Integer unidades) {
         if (unidades == null || unidades <= 0) {
             throw new ProductoInvalidoException("Las unidades deben ser mayores que cero");
         }

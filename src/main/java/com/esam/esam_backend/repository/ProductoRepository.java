@@ -4,9 +4,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.esam.esam_backend.model.Producto;
+
+import jakarta.persistence.LockModeType;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long>{
 
@@ -46,4 +50,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>{
 
     // Cantidad de productos asociados a una marca
     long countByMarcaIdMarca(Long idMarca);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Producto p where p.idProducto = :idProducto")
+    Optional<Producto> buscarPorIdParaPedido(@Param("idProducto") Long idProducto);
 }

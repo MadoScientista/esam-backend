@@ -162,7 +162,7 @@ public class ProductoController {
 
     // Setear stock a un valor específico
     @PutMapping("/{sku}/stock/setear")
-    public ResponseEntity<ProductoDTOResponse> setearStock(@PathVariable Long sku, @RequestParam Long stock) {
+    public ResponseEntity<ProductoDTOResponse> setearStock(@PathVariable Long sku, @RequestParam Integer stock) {
         
         Producto p = productoService.setearStock(sku, stock);
         ProductoDTOResponse dto = pMapper.toDTO(p);
@@ -171,13 +171,13 @@ public class ProductoController {
 
     // Disminuir stock en las unidades especificadas
     @PutMapping("/{sku}/stock/disminuir")
-    public ProductoDTOResponse disminuirStock(@PathVariable Long sku, @RequestParam Long unidades) {
+    public ProductoDTOResponse disminuirStock(@PathVariable Long sku, @RequestParam Integer unidades) {
         return pMapper.toDTO(productoService.disminuirStock(sku, unidades));
     }
 
     // Aumentar stock en las unidades especificadas
     @PutMapping("/{sku}/stock/aumentar")
-    public ProductoDTOResponse aumentarStock(@PathVariable Long sku, @RequestParam Long unidades) {
+    public ProductoDTOResponse aumentarStock(@PathVariable Long sku, @RequestParam Integer unidades) {
         return pMapper.toDTO(productoService.aumentarStock(sku, unidades));
     }
 

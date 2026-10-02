@@ -1,7 +1,9 @@
 package com.esam.esam_backend.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,42 +11,61 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import lombok.Data;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Version;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
 @NoArgsConstructor
-public class Producto {
+@Setter
+public class Producto{
 
-    @Id
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long sku;
-    
-    @Column(nullable = false, length = 50)
+    private Long idProducto;
+
+    @Column(nullable = false, unique = true)
+    private String sku;
+
+    @Column(nullable = false)
     private String nombre;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
-    
+
     @Column(nullable = false)
     private Long precio;
-    
+
     @Column(nullable = false)
-    private Long stock;
-    
-    // Un producto puede tener muchas imágenes
-    // Se inicializa vacía para que un Producto recién creado no devuelva null
-    @OneToMany(mappedBy = "producto")
-    private List<ImagenProducto> imagenes = new ArrayList<>();
-    
-    // Varios productos pueden tener una marca
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idMarca")
+    private Integer stock;
+
+    @Column(nullable = false)
+    private Boolean activo = true;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_marca", nullable = false)
     private Marca marca;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "producto_categoria",
+            joinColumns = @JoinColumn(name = "id_producto"),
+            inverseJoinColumns = @JoinColumn(name = "id_categoria"))
+    private Set<Categoria> categorias = new HashSet<>();
+
+    @OneToMany(mappedBy = "producto", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ImagenProducto> imagenes = new ArrayList<>();
 }

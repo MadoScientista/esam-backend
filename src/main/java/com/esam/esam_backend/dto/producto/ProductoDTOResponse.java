@@ -2,6 +2,9 @@ package com.esam.esam_backend.dto.producto;
 
 import java.util.List;
 
+import com.esam.esam_backend.dto.imagenProducto.ImagenProductoResponse;
+import com.esam.esam_backend.dto.marca.MarcaDTO;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,24 +12,23 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.esam.esam_backend.dto.imagenProducto.ImagenProductoResponse;
-
 @Data
 @NoArgsConstructor
 public class ProductoDTOResponse {
 
     @Min(value = 1)
-    private Long sku;
+    private Long idProducto;
 
     @NotBlank
-    @Size(max=50)
+    @Size(max = 50)
+    private String sku;
+
+    @NotBlank
+    @Size(max = 150)
     private String nombre;
 
-    @NotBlank
+    @Size(max = 5000)
     private String descripcion;
-
-    @NotBlank
-    private String marca;
 
     @NotNull
     @Min(value = 0)
@@ -34,8 +36,14 @@ public class ProductoDTOResponse {
 
     @NotNull
     @Min(value = 0)
-    private Long stock;
+    private Integer stock;
 
-    // Un producto puede tener muchas imágenes, ordenadas por posición
+    @NotBlank
+    private String marca;
+
+    private MarcaDTO marcaDetalle;
+
     private List<ImagenProductoResponse> imagenes;
+
+    private Long idMarca;
 }

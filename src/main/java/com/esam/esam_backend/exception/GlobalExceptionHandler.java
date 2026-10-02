@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -139,6 +140,20 @@ public class GlobalExceptionHandler {
         return respuesta(HttpStatus.CONFLICT, "ROL_USUARIO_CON_USUARIOS", exception.getMessage(), request);
     }
 
+    @ExceptionHandler(RolUsuarioDuplicadoException.class)
+    public ResponseEntity<ApiErrorResponse> manejarRolUsuarioDuplicado(
+            RolUsuarioDuplicadoException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "ROL_USUARIO_DUPLICADO", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(RolUsuarioSistemaException.class)
+    public ResponseEntity<ApiErrorResponse> manejarRolUsuarioSistema(
+            RolUsuarioSistemaException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "ROL_USUARIO_SISTEMA", exception.getMessage(), request);
+    }
+
     @ExceptionHandler(UsuarioNoEncontradaException.class)
     public ResponseEntity<ApiErrorResponse> manejarUsuarioNoEncontrado(
             UsuarioNoEncontradaException exception,
@@ -182,11 +197,27 @@ public class GlobalExceptionHandler {
         return respuesta(status, "ERROR_HTTP", message, request);
     }
 
+    // Una restricción de integridad violada trae el valor que la incumplió en el
+    // mensaje de MySQL (por ejemplo el correo duplicado), así que la excepción no
+    // se loguea: se registra la ruta y se responde con un mensaje genérico.
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> manejarConflictoDatos(
+            DataIntegrityViolationException exception,
+            HttpServletRequest request) {
+        LOGGER.warn("Restricción de integridad violada al procesar {}", request.getRequestURI());
+        return respuesta(HttpStatus.CONFLICT, "CONFLICTO_DATOS",
+                "La operación viola una restricción de integridad de la base de datos", request);
+    }
+
+    // Tampoco se adjunta la excepción: su mensaje puede contener datos del
+    // usuario. Se registra el tipo, que basta para clasificar el fallo.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> manejarErrorInesperado(
             Exception exception,
             HttpServletRequest request) {
-        LOGGER.error("Error inesperado al procesar {}", request.getRequestURI(), exception);
+        LOGGER.error("Error inesperado al procesar {} ({})",
+                request.getRequestURI(),
+                exception.getClass().getSimpleName());
         return respuesta(HttpStatus.INTERNAL_SERVER_ERROR, "ERROR_INTERNO", "Ocurrió un error interno", request);
     }
 

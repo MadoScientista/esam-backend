@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 public class UsuarioDTOLoginResponse {
 
     private boolean loggin;
+    private String token;
     private UsuarioDTOResponse usuario;
 }

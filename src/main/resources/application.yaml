@@ -37,3 +37,7 @@ server:
 
 cloudinary:
   url: ${CLOUDINARY_URL}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}

@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 
 import com.esam.esam_backend.dto.rolUsuario.RolUsuarioDTORequest;
 import com.esam.esam_backend.exception.RolUsuarioConUsuariosException;
+import com.esam.esam_backend.exception.RolUsuarioDuplicadoException;
 import com.esam.esam_backend.exception.RolUsuarioNoEncontradaException;
+import com.esam.esam_backend.exception.RolUsuarioSistemaException;
 import com.esam.esam_backend.mapper.RolUsuarioMapper;
 import com.esam.esam_backend.model.RolUsuario;
 import com.esam.esam_backend.repository.RolUsuarioRepository;
@@ -36,12 +38,39 @@ public class RolUsuarioService {
 
     // Guardar
     public RolUsuario guardar(RolUsuarioDTORequest request) {
+        String nombre = request.getNombre();
+
+        if (nombre == null || nombre.isBlank()) {
+            throw new RolUsuarioSistemaException("El nombre del rol es obligatorio");
+        }
+
+        if (rRepo.findByNombre(nombre).isPresent()) {
+            throw new RolUsuarioDuplicadoException("Ya existe un rol con el nombre " + nombre);
+        }
+
         return rRepo.save(rMapper.toEntity(request));
     }
 
     // Editar
     public RolUsuario editar(Long id, RolUsuarioDTORequest request) {
         RolUsuario rol = obtenerRol(id);
+
+        // Los roles del sistema no se renombran: el registro publico y las
+        // reglas de autorizacion los buscan por nombre.
+        if (rol.esDelSistema()) {
+            throw new RolUsuarioSistemaException(
+                    "El rol " + rol.getNombre() + " es del sistema y no se puede renombrar");
+        }
+
+        String nombre = request.getNombre();
+
+        if (nombre != null && !nombre.isBlank()) {
+            RolUsuario existente = rRepo.findByNombre(nombre).orElse(null);
+
+            if (existente != null && !existente.getIdRolUsuario().equals(id)) {
+                throw new RolUsuarioDuplicadoException("Ya existe un rol con el nombre " + nombre);
+            }
+        }
 
         rol.setNombre(request.getNombre());
 
@@ -51,6 +80,11 @@ public class RolUsuarioService {
     // Borrar
     public void borrar(Long id) {
         RolUsuario rol = obtenerRol(id);
+
+        if (rol.esDelSistema()) {
+            throw new RolUsuarioSistemaException(
+                    "El rol " + rol.getNombre() + " es del sistema y no se puede eliminar");
+        }
 
         long usuariosAsociados = uRepo.countByRolUsuarioIdRolUsuario(id);
 

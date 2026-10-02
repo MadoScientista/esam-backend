@@ -1,3 +1,5 @@
+-- Solo ejemplo de estructura
+-- Debe cambiar el nombre de usuario y contraseña
 DROP USER IF EXISTS 'admin_esam_db'@'localhost';
 
 DROP DATABASE IF EXISTS esam_db;

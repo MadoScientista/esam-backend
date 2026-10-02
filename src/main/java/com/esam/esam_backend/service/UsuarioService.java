@@ -2,9 +2,11 @@ package com.esam.esam_backend.service;
 
 import java.util.List;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.esam.esam_backend.dto.usuario.UsuarioAdminDTORequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTORequest;
 import com.esam.esam_backend.exception.UsuarioInvalidaException;
 import com.esam.esam_backend.exception.UsuarioNoEncontradaException;
@@ -53,9 +55,17 @@ public class UsuarioService {
 
     // Guardar usuario
     public Usuario guardar(UsuarioDTORequest request) {
+        return guardarConRol(request, obtenerRolCliente());
+    }
+
+    // Guardar usuario eligiendo su rol. Solo lo usa el administrador.
+    public Usuario guardar(UsuarioAdminDTORequest request) {
+        return guardarConRol(request, obtenerRol(request.getIdRolUsuario()));
+    }
+
+    private Usuario guardarConRol(UsuarioDTORequest request, RolUsuario rol) {
         validarPasswordNueva(request.getPassword());
 
-        RolUsuario rol = obtenerRol(request.getIdRolUsuario());
         Region region = obtenerRegion(request.getIdRegion());
         Comuna comuna = obtenerComuna(request.getIdComuna());
 
@@ -65,11 +75,28 @@ public class UsuarioService {
         return uRepo.save(usuario);
     }
 
-    // Editar usuario
-    public Usuario editar(Long id, UsuarioDTORequest request) {
+    // Editar usuario. Solo lo usa el administrador: puede cambiar el rol.
+    public Usuario editar(Long id, UsuarioAdminDTORequest request) {
         Usuario usuario = obtenerUsuario(id);
 
         RolUsuario rol = obtenerRol(request.getIdRolUsuario());
+
+        actualizarDatos(usuario, request);
+        usuario.setRolUsuario(rol);
+
+        return uRepo.save(usuario);
+    }
+
+    // Editar el perfil propio. El rol no se toca aunque venga en el cuerpo.
+    public Usuario editarPerfil(Long id, UsuarioDTORequest request) {
+        Usuario usuario = obtenerUsuario(id);
+
+        actualizarDatos(usuario, request);
+
+        return uRepo.save(usuario);
+    }
+
+    private void actualizarDatos(Usuario usuario, UsuarioDTORequest request) {
         Region region = obtenerRegion(request.getIdRegion());
         Comuna comuna = obtenerComuna(request.getIdComuna());
 
@@ -82,37 +109,18 @@ public class UsuarioService {
         usuario.setDireccion(request.getDireccion());
         usuario.setTelefono(request.getTelefono());
         usuario.setCorreo(request.getCorreo());
-        usuario.setRolUsuario(rol);
         usuario.setRegion(region);
         usuario.setComuna(comuna);
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         }
-
-        return uRepo.save(usuario);
     }
 
     // Borrar usuario
     public void borrar(Long id) {
         Usuario usuario = obtenerUsuario(id);
         uRepo.delete(usuario);
-    }
-
-    // Confirmar login
-    public boolean confirmarLogin(String correo, String password) {
-        Usuario usuario = uRepo.findByCorreo(correo);
-
-        if (usuario == null || password == null || usuario.getPassword() == null) {
-            return false;
-        }
-
-        return passwordEncoder.matches(password, usuario.getPassword());
-    }
-
-    // Obtener usuario según su correo
-    public Usuario obtenerPorCorreo(String correo) {
-        return uRepo.findByCorreo(correo);
     }
 
     private Usuario obtenerUsuario(Long id) {
@@ -128,6 +136,14 @@ public class UsuarioService {
     private RolUsuario obtenerRol(Long idRolUsuario) {
         return rRepo.findById(idRolUsuario)
                 .orElseThrow(() -> new UsuarioInvalidaException("No existe un rol de usuario con id " + idRolUsuario));
+    }
+
+    // El registro publico siempre nace como "cliente", se resuelva por nombre
+    // y no por un id fijo.
+    private RolUsuario obtenerRolCliente() {
+        return rRepo.findByNombre(RolUsuario.CLIENTE)
+                .orElseThrow(() ->
+                    new UsuarioInvalidaException("No existe el rol de usuario " + RolUsuario.CLIENTE));
     }
 
     private Region obtenerRegion(Long idRegion) {

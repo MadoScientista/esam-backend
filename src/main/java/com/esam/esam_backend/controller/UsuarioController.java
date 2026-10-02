@@ -4,6 +4,11 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,12 +18,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.esam.esam_backend.dto.usuario.UsuarioAdminDTORequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOLogin;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOLoginResponse;
 import com.esam.esam_backend.dto.usuario.UsuarioDTORequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOResponse;
 import com.esam.esam_backend.mapper.UsuarioMapper;
 import com.esam.esam_backend.model.Usuario;
+import com.esam.esam_backend.security.CustomUserDetails;
+import com.esam.esam_backend.security.JwtService;
 import com.esam.esam_backend.service.UsuarioService;
 
 import jakarta.validation.Valid;
@@ -30,8 +38,9 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
     private final UsuarioService usuarioService;
-
     private final UsuarioMapper usuarioMapper;
 
     // Obtener un usuario por su id
@@ -66,24 +75,53 @@ public class UsuarioController {
         return ResponseEntity.ok(dtoList);
     }
 
-    // Confirmar login
-    @PostMapping("/login")
-    public ResponseEntity<UsuarioDTOLoginResponse> login(@RequestBody @Valid UsuarioDTOLogin login) {
+    // Obtener el perfil del usuario autenticado
+    @GetMapping("/perfil")
+    public ResponseEntity<UsuarioDTOResponse> obtenerPerfil(
+            @AuthenticationPrincipal CustomUserDetails principal) {
 
-        boolean loggin = usuarioService.confirmarLogin(login.getCorreo(), login.getPassword());
+        Usuario usuario = usuarioService.obtenerPorId(principal.getUsuario().getIdUsuario());
 
-        UsuarioDTOLoginResponse response = new UsuarioDTOLoginResponse();
-        response.setLoggin(loggin);
-
-        if (loggin) {
-            Usuario usuario = usuarioService.obtenerPorCorreo(login.getCorreo());
-            response.setUsuario(usuarioMapper.toDTO(usuario));
-        }
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(usuarioMapper.toDTO(usuario));
     }
 
-    // Guardar un usuario
+    // Confirmar login
+    @PostMapping("/login")
+    public ResponseEntity<UsuarioDTOLoginResponse> login(
+            @RequestBody @Valid UsuarioDTOLogin login) {
+
+        try{
+
+            Authentication authentication = 
+                authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                        login.getCorreo(), login.getPassword())
+                );
+
+            // authenticate() ya devolvió el usuario cargado: consultarlo otra
+            // vez por correo era redundante, y devolvía null (con NPE al
+            // mapear) si el casing no coincidía con el almacenado.
+            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+
+            String token = jwtService.generarToken(principal);
+
+            UsuarioDTOLoginResponse response = new UsuarioDTOLoginResponse();
+
+            response.setLoggin(true);
+            response.setToken(token);
+            response.setUsuario(usuarioMapper.toDTO(principal.getUsuario()));
+
+            return ResponseEntity.ok(response);
+
+        }catch (BadCredentialsException e){
+            UsuarioDTOLoginResponse response = new UsuarioDTOLoginResponse();
+            response.setLoggin(false);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        
+    }
+
+    // Registrar un usuario. Es público, pero el rol queda fijo en "cliente".
     @PostMapping
     public ResponseEntity<UsuarioDTOResponse> guardar(@RequestBody @Valid UsuarioDTORequest request) {
 
@@ -93,11 +131,36 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
-    // Editar un usuario
+    // Crear un usuario eligiendo su rol. Solo administradores.
+    @PostMapping("/admin")
+    public ResponseEntity<UsuarioDTOResponse> guardarPorAdmin(
+            @RequestBody @Valid UsuarioAdminDTORequest request) {
+
+        Usuario usuario = usuarioService.guardar(request);
+
+        UsuarioDTOResponse dto = usuarioMapper.toDTO(usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    // Editar un usuario. Solo administradores: aquí sí se puede cambiar el rol.
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioDTOResponse> editar(@PathVariable Long id, @RequestBody @Valid UsuarioDTORequest request) {
+    public ResponseEntity<UsuarioDTOResponse> editar(
+            @PathVariable Long id,
+            @RequestBody @Valid UsuarioAdminDTORequest request) {
 
         Usuario usuario = usuarioService.editar(id, request);
+
+        UsuarioDTOResponse dto = usuarioMapper.toDTO(usuario);
+        return ResponseEntity.ok(dto);
+    }
+
+    // Editar el perfil propio. El rol no se modifica.
+    @PutMapping("/perfil")
+    public ResponseEntity<UsuarioDTOResponse> editarPerfil(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @RequestBody @Valid UsuarioDTORequest request) {
+
+        Usuario usuario = usuarioService.editarPerfil(principal.getUsuario().getIdUsuario(), request);
 
         UsuarioDTOResponse dto = usuarioMapper.toDTO(usuario);
         return ResponseEntity.ok(dto);

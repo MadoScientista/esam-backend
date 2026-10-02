@@ -51,10 +51,6 @@ public class UsuarioDTORequest {
 
     @NotNull
     @Min(value = 1)
-    private Long idRolUsuario;
-
-    @NotNull
-    @Min(value = 1)
     private Long idRegion;
 
     @NotNull

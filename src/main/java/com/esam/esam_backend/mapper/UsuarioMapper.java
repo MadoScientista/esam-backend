@@ -24,11 +24,8 @@ public class UsuarioMapper {
         dto.setDv(usuario.getDv());
         dto.setCorreo(usuario.getCorreo());
         dto.setFechaNacimiento(usuario.getFechaNacimiento());
-        dto.setDireccion(usuario.getDireccion());
         dto.setTelefono(usuario.getTelefono());
         RegionDTO region = new RegionDTO();
-        region.setIdRegion(usuario.getRegion().getIdRegion());
-        region.setNombre(usuario.getRegion().getNombre());
         dto.setRegion(region);
         ComunaDTO comuna = new ComunaDTO();
         comuna.setIdComuna(usuario.getComuna().getIdComuna());

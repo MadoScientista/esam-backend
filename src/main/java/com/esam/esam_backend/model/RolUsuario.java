@@ -3,40 +3,31 @@ package com.esam.esam_backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
 @NoArgsConstructor
-public class RolUsuario {
+@Setter
+public class RolUsuario{
 
-    // Nombres de los roles que la aplicacion necesita para funcionar.
-    // No se pueden renombrar ni borrar: el registro publico y las reglas de
-    // autorizacion los buscan por nombre.
-    public static final String ADMIN = "admin";
-    public static final String VENDEDOR = "vendedor";
-    public static final String CLIENTE = "cliente";
-
-    @Id
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idRolUsuario;
 
-    @Column(nullable = false, length = 25)
+    @Column(nullable = false, unique = true)
     private String nombre;
 
-    // Un rol puede tener muchos usuarios
-    @OneToMany(mappedBy = "rolUsuario", cascade = CascadeType.ALL ,orphanRemoval = true)
+    @OneToMany(mappedBy = "rolUsuario", fetch = FetchType.LAZY)
     private List<Usuario> usuarios = new ArrayList<>();
 
-    public boolean esDelSistema() {
-        return ADMIN.equals(nombre) || VENDEDOR.equals(nombre) || CLIENTE.equals(nombre);
-    }
 }

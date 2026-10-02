@@ -3,32 +3,30 @@ package com.esam.esam_backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Column;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
 @NoArgsConstructor
-public class Region {
+@Setter
+public class Region{
 
-    @Id
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idRegion;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, unique = true)
     private String nombre;
 
-    //One to Many
-    @OneToMany(mappedBy = "region")
+    @OneToMany(mappedBy = "region", fetch = FetchType.LAZY)
     private List<Comuna> comunas = new ArrayList<>();
-
-    //Una region puede tener muchos usuarios
-    @OneToMany(mappedBy = "region")
-    private List<Usuario> usuarios = new ArrayList<>();
 }

@@ -13,9 +13,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 
     Optional<Usuario> findByCorreo(String correo);
 
-    // Cantidad de usuarios asociados a una región
-    long countByRegionIdRegion(Long idRegion);
-
     // Cantidad de usuarios asociados a una comuna
     long countByComunaIdComuna(Long idComuna);
 

@@ -55,12 +55,12 @@ public class RolUsuarioService {
     public RolUsuario editar(Long id, RolUsuarioDTORequest request) {
         RolUsuario rol = obtenerRol(id);
 
-        // Los roles del sistema no se renombran: el registro publico y las
-        // reglas de autorizacion los buscan por nombre.
-        if (rol.esDelSistema()) {
-            throw new RolUsuarioSistemaException(
-                    "El rol " + rol.getNombre() + " es del sistema y no se puede renombrar");
-        }
+        // // Los roles del sistema no se renombran: el registro publico y las
+        // // reglas de autorizacion los buscan por nombre.
+        // if (rol.esDelSistema()) {
+        //     throw new RolUsuarioSistemaException(
+        //             "El rol " + rol.getNombre() + " es del sistema y no se puede renombrar");
+        // }
 
         String nombre = request.getNombre();
 
@@ -81,10 +81,10 @@ public class RolUsuarioService {
     public void borrar(Long id) {
         RolUsuario rol = obtenerRol(id);
 
-        if (rol.esDelSistema()) {
-            throw new RolUsuarioSistemaException(
-                    "El rol " + rol.getNombre() + " es del sistema y no se puede eliminar");
-        }
+        // if (rol.esDelSistema()) {
+        //     throw new RolUsuarioSistemaException(
+        //             "El rol " + rol.getNombre() + " es del sistema y no se puede eliminar");
+        // }
 
         long usuariosAsociados = uRepo.countByRolUsuarioIdRolUsuario(id);
 

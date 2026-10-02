@@ -1,5 +1,9 @@
 package com.esam.esam_backend.model;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,61 +12,70 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Usuario {
+public class Usuario{
 
-    @Id
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idUsuario;
 
-    // Datos básicos
+    @Column(nullable = true, length = 25)
     private String nombres;
+
+    @Column(nullable = true, length = 25)
     private String aPaterno;
+
+    @Column(nullable = true, length = 25)
     private String aMaterno;
 
+    @Column(nullable = true, length = 8)
     private Long rut;
+
+    @Column(nullable = true, length = 1)
     private String dv;
 
+    @Column(nullable = true)
     private LocalDate fechaNacimiento;
 
-    private String direccion;
-    private Long telefono;
-
-    // Datos de credenciales
-
-    @NotBlank
     @Email
-    @Size(max = 100)
-    @Column(nullable = false, unique = true, length = 100)
+    @NotBlank
+    @Column(nullable = false, unique = true)
     private String correo;
 
-    @NotBlank
     @Column(nullable = false)
     private String password;
 
-    // Muchos usuarios pueden tener un rol
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="idRolUsuario")
+    @Column
+    private String telefono;
+
+    @Column(nullable = false)
+    private Boolean activo = true;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_rol_usuario", nullable = false)
     private RolUsuario rolUsuario;
 
-    // Muchos usuarios pueden pertenecer a una comuna
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="idComuna")
-    private Comuna comuna;
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private List<Direccion> direcciones = new ArrayList<>();
 
-    // Muchos usuarios pueden pertenecer a una region
+    @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private Carrito carrito;
+
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private List<Pedido> pedidos = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="idRegion")
-    private Region region;
+    @JoinColumn(name = "id_comuna")
+    private Comuna comuna;
 }

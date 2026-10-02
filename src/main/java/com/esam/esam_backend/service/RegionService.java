@@ -11,7 +11,6 @@ import com.esam.esam_backend.mapper.RegionMapper;
 import com.esam.esam_backend.model.Region;
 import com.esam.esam_backend.repository.ComunaRepository;
 import com.esam.esam_backend.repository.RegionRepository;
-import com.esam.esam_backend.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,8 +21,6 @@ public class RegionService {
     private final RegionRepository rRepo;
 
     private final ComunaRepository cRepo;
-
-    private final UsuarioRepository uRepo;
 
     private final RegionMapper rMapper;
 
@@ -56,12 +53,10 @@ public class RegionService {
         Region region = obtenerRegion(id);
 
         long comunasAsociadas = cRepo.countByRegionIdRegion(id);
-        long usuariosAsociados = uRepo.countByRegionIdRegion(id);
 
-        if(comunasAsociadas > 0 || usuariosAsociados > 0){
+        if(comunasAsociadas > 0){
             throw new RegionConDependenciasException(
-                    "La región " + id + " tiene " + comunasAsociadas + " comuna(s) y "
-                            + usuariosAsociados + " usuario(s) asociado(s)");
+                    "La región " + id + " tiene " + comunasAsociadas + " comuna(s) asociada(s)");
         }
 
         rRepo.delete(region);

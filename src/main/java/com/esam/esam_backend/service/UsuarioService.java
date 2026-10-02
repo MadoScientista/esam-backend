@@ -1,5 +1,6 @@
 package com.esam.esam_backend.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -8,10 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.esam.esam_backend.dto.usuario.UsuarioAdminDTORequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTORequest;
+import com.esam.esam_backend.enums.RolSistema;
 import com.esam.esam_backend.exception.UsuarioInvalidaException;
 import com.esam.esam_backend.exception.UsuarioNoEncontradaException;
 import com.esam.esam_backend.mapper.UsuarioDTORequestMapper;
 import com.esam.esam_backend.model.Comuna;
+import com.esam.esam_backend.model.Direccion;
 import com.esam.esam_backend.model.Region;
 import com.esam.esam_backend.model.RolUsuario;
 import com.esam.esam_backend.model.Usuario;
@@ -68,8 +71,13 @@ public class UsuarioService {
 
         Region region = obtenerRegion(request.getIdRegion());
         Comuna comuna = obtenerComuna(request.getIdComuna());
+        
+        //-------------------------------------
+        // Arreglar
+        //
+        List<Direccion> direcciones = new ArrayList<>();
 
-        Usuario usuario = uMapper.toEntity(request, rol, region, comuna);
+        Usuario usuario = uMapper.toEntity(request, rol, comuna, direcciones);
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
 
         return uRepo.save(usuario);
@@ -97,8 +105,9 @@ public class UsuarioService {
     }
 
     private void actualizarDatos(Usuario usuario, UsuarioDTORequest request) {
-        Region region = obtenerRegion(request.getIdRegion());
+
         Comuna comuna = obtenerComuna(request.getIdComuna());
+        Direccion direccion = obtenerDireccion(request.getIdDireccion());
 
         usuario.setNombres(request.getNombres());
         usuario.setAPaterno(request.getAPaterno());
@@ -106,10 +115,9 @@ public class UsuarioService {
         usuario.setRut(request.getRut());
         usuario.setDv(request.getDv());
         usuario.setFechaNacimiento(request.getFechaNacimiento());
-        usuario.setDireccion(request.getDireccion());
+        usuario.getDirecciones().add(direccion);
         usuario.setTelefono(request.getTelefono());
         usuario.setCorreo(request.getCorreo());
-        usuario.setRegion(region);
         usuario.setComuna(comuna);
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
@@ -141,9 +149,9 @@ public class UsuarioService {
     // El registro publico siempre nace como "cliente", se resuelva por nombre
     // y no por un id fijo.
     private RolUsuario obtenerRolCliente() {
-        return rRepo.findByNombre(RolUsuario.CLIENTE)
+        return rRepo.findByNombre(RolSistema.CLIENTE.getNombre())
                 .orElseThrow(() ->
-                    new UsuarioInvalidaException("No existe el rol de usuario " + RolUsuario.CLIENTE));
+                    new UsuarioInvalidaException("No existe el rol de usuario " + RolSistema.CLIENTE.getNombre()));
     }
 
     private Region obtenerRegion(Long idRegion) {
@@ -160,5 +168,10 @@ public class UsuarioService {
         if (password == null || password.isBlank()) {
             throw new UsuarioInvalidaException("La contraseña es obligatoria al crear un usuario");
         }
+    }
+
+
+    private Direccion obtenerDireccion(Long idDireccion) {
+        return new Direccion();
     }
 }

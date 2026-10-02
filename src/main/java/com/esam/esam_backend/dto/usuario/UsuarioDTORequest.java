@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,26 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class UsuarioDTORequest {
+
+    @NotBlank
+    @Size(max = 100)
+    private String nombre;
+
+    @NotBlank
+    @Size(max = 100)
+    private String apellido;
+
+    @NotBlank
+    @Email
+    @Size(max = 254)
+    private String email;
+
+    @NotBlank
+    @Size(min = 8, max = 72)
+    private String password;
+
+    @Pattern(regexp = "^\\+?[0-9]{8,15}$")
+    private String telefono;
 
     @NotBlank
     @Size(max = 255)
@@ -39,15 +60,10 @@ public class UsuarioDTORequest {
     @Size(max = 300)
     private String direccion;
 
-    private Long telefono;
-
     @NotBlank
     @Email
     @Size(max = 100)
     private String correo;
-
-    @NotBlank
-    private String password;
 
     @NotNull
     @Min(value = 1)
@@ -56,4 +72,7 @@ public class UsuarioDTORequest {
     @NotNull
     @Min(value = 1)
     private Long idComuna;
+
+    @Min(value = 1)
+    private Long idDireccion;
 }

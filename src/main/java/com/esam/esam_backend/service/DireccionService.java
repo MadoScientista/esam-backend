@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.esam.esam_backend.dto.direccion.DireccionDTORequest;
 import com.esam.esam_backend.exception.ComunaInvalidaException;
@@ -29,10 +30,6 @@ public class DireccionService {
     private final ComunaRepository cRepo;
     private final DireccionMapper dMapper;
 
-    public List<Direccion> obtenerTodos() {
-        return dRepo.findAll();
-    }
-
     public List<Direccion> obtenerPorUsuario(Long idUsuario) {
         return dRepo.findByUsuarioIdUsuario(idUsuario);
     }
@@ -41,17 +38,27 @@ public class DireccionService {
         return dRepo.findByUsuarioIdUsuarioAndActivoTrueOrderByIdDireccionAsc(idUsuario);
     }
 
-    public Direccion obtenerPorId(Long id) {
-        return dRepo.findById(id).orElse(null);
+    public Direccion obtenerPorId(Long id, Long idUsuarioAutenticado) {
+        Direccion direccion = dRepo.findById(id).orElse(null);
+        if (direccion != null) {
+            validarPropietario(direccion.getUsuario().getIdUsuario(), idUsuarioAutenticado);
+        }
+        return direccion;
     }
 
     public Direccion obtenerPorIdRequerida(Long id) {
         return obtenerDireccion(id);
     }
 
+    public void validarPropietario(Long idUsuarioSolicitado, Long idUsuarioAutenticado) {
+        if (!idUsuarioAutenticado.equals(idUsuarioSolicitado)) {
+            throw new AccessDeniedException("No tiene permiso para acceder a esta dirección");
+        }
+    }
+
     @Transactional
-    public Direccion guardar(DireccionDTORequest request) {
-        Usuario usuario = obtenerUsuario(request.getIdUsuario());
+    public Direccion guardar(DireccionDTORequest request, Long idUsuarioAutenticado) {
+        Usuario usuario = obtenerUsuario(idUsuarioAutenticado);
         Comuna comuna = obtenerComuna(request.getIdComuna());
 
         Direccion direccion = dMapper.toEntity(request, usuario, comuna);
@@ -63,16 +70,16 @@ public class DireccionService {
     }
 
     @Transactional
-    public Direccion editar(Long id, DireccionDTORequest request) {
+    public Direccion editar(Long id, DireccionDTORequest request, Long idUsuarioAutenticado) {
         Direccion direccion = obtenerDireccion(id);
-        Usuario usuario = obtenerUsuario(request.getIdUsuario());
+        validarPropietario(direccion.getUsuario().getIdUsuario(), idUsuarioAutenticado);
+        Usuario usuario = obtenerUsuario(idUsuarioAutenticado);
         Comuna comuna = obtenerComuna(request.getIdComuna());
 
         if (Boolean.TRUE.equals(request.getPredeterminada()) && !Boolean.TRUE.equals(direccion.getActivo())) {
             throw new DireccionInvalidaException("Una dirección inactiva no puede ser predeterminada");
         }
 
-        Long idUsuarioAnterior = direccion.getUsuario().getIdUsuario();
         direccion.setNombreReceptor(request.getNombreReceptor());
         direccion.setTelefonoReceptor(request.getTelefonoReceptor());
         direccion.setCalle(request.getCalle());
@@ -86,17 +93,13 @@ public class DireccionService {
             quitarPredeterminadaDeOtras(usuario.getIdUsuario(), id);
         }
 
-        if (!idUsuarioAnterior.equals(usuario.getIdUsuario())
-                && Boolean.TRUE.equals(direccion.getPredeterminada())) {
-            quitarPredeterminadaDeOtras(idUsuarioAnterior, null);
-        }
-
         return dRepo.save(direccion);
     }
 
     @Transactional
-    public void borrar(Long id) {
+    public void borrar(Long id, Long idUsuarioAutenticado) {
         Direccion direccion = obtenerDireccion(id);
+        validarPropietario(direccion.getUsuario().getIdUsuario(), idUsuarioAutenticado);
         Usuario usuario = direccion.getUsuario();
 
         dRepo.delete(direccion);

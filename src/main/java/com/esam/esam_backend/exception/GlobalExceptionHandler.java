@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.ErrorResponseException;
@@ -263,6 +264,14 @@ public class GlobalExceptionHandler {
         LOGGER.warn("Restricción de integridad violada al procesar {}", request.getRequestURI());
         return respuesta(HttpStatus.CONFLICT, "CONFLICTO_DATOS",
                 "La operación viola una restricción de integridad de la base de datos", request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> manejarAccesoDenegado(
+            AccessDeniedException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.FORBIDDEN, "ACCESO_DENEGADO",
+                "No tiene permiso para realizar esta operación", request);
     }
 
     // Tampoco se adjunta la excepción: su mensaje puede contener datos del

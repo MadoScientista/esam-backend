@@ -90,6 +90,15 @@ public class SecurityConfig {
                 "/api/productos/**")
             .hasAnyRole("admin", "vendedor")
 
+            // Las categorías se consultan según las reglas existentes;
+            // solo admin puede crear, editar o eliminar.
+            .requestMatchers(HttpMethod.POST, "/api/categorias", "/api/categorias/**")
+            .hasRole("admin")
+            .requestMatchers(HttpMethod.PUT, "/api/categorias/**")
+            .hasRole("admin")
+            .requestMatchers(HttpMethod.DELETE, "/api/categorias/**")
+            .hasRole("admin")
+
             // Marcas, geografía y roles: solo admin.
             .requestMatchers(
                 HttpMethod.POST,

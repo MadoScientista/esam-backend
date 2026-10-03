@@ -45,6 +45,10 @@ public class DireccionService {
         return dRepo.findById(id).orElse(null);
     }
 
+    public Direccion obtenerPorIdRequerida(Long id) {
+        return obtenerDireccion(id);
+    }
+
     @Transactional
     public Direccion guardar(DireccionDTORequest request) {
         Usuario usuario = obtenerUsuario(request.getIdUsuario());

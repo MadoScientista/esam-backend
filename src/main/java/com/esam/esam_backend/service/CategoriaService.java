@@ -26,16 +26,8 @@ public class CategoriaService {
     private final CategoriaRepository cRepo;
     private final CategoriaMapper cMapper;
 
-    public List<Categoria> obtenerCategorias() {
-        return cRepo.findAll();
-    }
-
     public List<Categoria> obtenerTodos() {
         return cRepo.findAll();
-    }
-
-    public Categoria obtenerCategoriaId(Long idCategoria) {
-        return obtenerPorId(idCategoria);
     }
 
     public Categoria obtenerPorId(Long idCategoria) {
@@ -106,16 +98,11 @@ public class CategoriaService {
     }
 
     public List<Categoria> obtenerRaices() {
-        return cRepo.findAll().stream()
-                .filter(categoria -> categoria.getPadre() == null)
-                .toList();
+        return cRepo.findByPadreIsNull();
     }
 
     public List<Categoria> obtenerPorPadre(Long idPadre) {
-        return cRepo.findAll().stream()
-                .filter(categoria -> categoria.getPadre() != null
-                        && categoria.getPadre().getIdCategoria().equals(idPadre))
-                .toList();
+        return cRepo.findByPadre_IdCategoria(idPadre);
     }
 
     private void validarRelacionPadre(Long idCategoriaActual, Categoria padre) {

@@ -8,7 +8,11 @@ import org.springframework.stereotype.Component;
 import com.esam.esam_backend.dto.comuna.ComunaDTO;
 import com.esam.esam_backend.dto.region.RegionDTO;
 import com.esam.esam_backend.dto.rolUsuario.RolUsuarioDTO;
+import com.esam.esam_backend.dto.usuario.UsuarioDTORequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOResponse;
+import com.esam.esam_backend.model.Comuna;
+import com.esam.esam_backend.model.Direccion;
+import com.esam.esam_backend.model.RolUsuario;
 import com.esam.esam_backend.model.Usuario;
 
 @Component 
@@ -42,5 +46,25 @@ public class UsuarioMapper {
         return usuarios.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Usuario toEntity(
+            UsuarioDTORequest dto,
+            RolUsuario rol,
+            Comuna comuna,
+            List<Direccion> direcciones) {
+        Usuario usuario = new Usuario();
+        usuario.setNombres(dto.getNombres());
+        usuario.setAPaterno(dto.getAPaterno());
+        usuario.setAMaterno(dto.getAMaterno());
+        usuario.setRut(dto.getRut());
+        usuario.setDv(dto.getDv());
+        usuario.setFechaNacimiento(dto.getFechaNacimiento());
+        usuario.setDirecciones(direcciones);
+        usuario.setTelefono(dto.getTelefono());
+        usuario.setCorreo(dto.getCorreo());
+        usuario.setRolUsuario(rol);
+        usuario.setComuna(comuna);
+        return usuario;
     }
 }

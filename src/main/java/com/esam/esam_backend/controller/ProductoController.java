@@ -99,8 +99,7 @@ public class ProductoController {
     @PostMapping
     public ResponseEntity<ProductoDTOResponse> guardar(@Valid @RequestBody ProductoDTORequest request) {
         
-        Producto p = pMapper.toEntity(request);
-        Producto pGuardado = productoService.guardar(p);
+        Producto pGuardado = productoService.guardar(request);
         ProductoDTOResponse dto = pMapper.toDTO(pGuardado);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);

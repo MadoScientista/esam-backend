@@ -1,9 +1,7 @@
 package com.esam.esam_backend.service;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.esam.esam_backend.dto.carrito.CarritoDTOResponse;
 import com.esam.esam_backend.dto.carrito.ItemCarritoCantidadDTORequest;
@@ -12,7 +10,6 @@ import com.esam.esam_backend.exception.ProductoNoEncontradoException;
 import com.esam.esam_backend.exception.UsuarioNoEncontradaException;
 import com.esam.esam_backend.mapper.CarritoMapper;
 import com.esam.esam_backend.model.Carrito;
-import com.esam.esam_backend.model.ItemCarrito;
 import com.esam.esam_backend.model.Producto;
 import com.esam.esam_backend.model.Usuario;
 import com.esam.esam_backend.repository.CarritoRepository;
@@ -29,6 +26,7 @@ public class CarritoService {
     private final UsuarioRepository usuarioRepository;
     private final ProductoRepository productoRepository;
     private final CarritoMapper carritoMapper;
+    private final ItemCarritoService itemCarritoService;
 
     @Transactional
     public CarritoDTOResponse obtenerOCrear(Long idUsuario) {
@@ -42,24 +40,7 @@ public class CarritoService {
                 .orElseThrow(() -> new ProductoNoEncontradoException(
                         "No existe un producto con id " + request.getIdProducto()));
 
-        ItemCarrito itemExistente = carrito.getItems().stream()
-                .filter(item -> item.getProducto().getIdProducto().equals(producto.getIdProducto()))
-                .findFirst()
-                .orElse(null);
-
-        if (itemExistente == null) {
-            ItemCarrito item = new ItemCarrito();
-            item.setCarrito(carrito);
-            item.setProducto(producto);
-            item.setCantidad(request.getCantidad());
-            carrito.getItems().add(item);
-        } else {
-            int cantidadActualizada = itemExistente.getCantidad() + request.getCantidad();
-            if (cantidadActualizada > 99) {
-                throw new IllegalArgumentException("La cantidad de un producto en el carrito no puede superar 99");
-            }
-            itemExistente.setCantidad(cantidadActualizada);
-        }
+        itemCarritoService.agregar(carrito, producto, request.getCantidad());
 
         return carritoMapper.toDTO(carritoRepository.save(carrito));
     }
@@ -70,22 +51,21 @@ public class CarritoService {
             Long idProducto,
             ItemCarritoCantidadDTORequest request) {
         Carrito carrito = obtenerCarrito(idUsuario);
-        ItemCarrito item = obtenerItem(carrito, idProducto);
-        item.setCantidad(request.getCantidad());
+        itemCarritoService.cambiarCantidad(carrito, idProducto, request.getCantidad());
         return carritoMapper.toDTO(carritoRepository.save(carrito));
     }
 
     @Transactional
     public CarritoDTOResponse quitarItem(Long idUsuario, Long idProducto) {
         Carrito carrito = obtenerCarrito(idUsuario);
-        carrito.getItems().remove(obtenerItem(carrito, idProducto));
+        itemCarritoService.quitar(carrito, idProducto);
         return carritoMapper.toDTO(carritoRepository.save(carrito));
     }
 
     @Transactional
     public void vaciar(Long idUsuario) {
         Carrito carrito = obtenerCarrito(idUsuario);
-        carrito.getItems().clear();
+        itemCarritoService.vaciar(carrito);
         carritoRepository.save(carrito);
     }
 
@@ -100,14 +80,5 @@ public class CarritoService {
                     carrito.setUsuario(usuario);
                     return carritoRepository.save(carrito);
                 });
-    }
-
-    private ItemCarrito obtenerItem(Carrito carrito, Long idProducto) {
-        return carrito.getItems().stream()
-                .filter(item -> item.getProducto().getIdProducto().equals(idProducto))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "El producto " + idProducto + " no está en el carrito"));
     }
 }

@@ -2,6 +2,7 @@ package com.esam.esam_backend.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ import com.esam.esam_backend.model.Pedido;
 @Component
 public class PedidoMapper {
 
-    public PedidoDTOResponse toDTO(Pedido pedido) {
+    public PedidoDTOResponse toDTO(Pedido pedido, List<DetallePedido> detalles) {
         List<CambioEstadoPedido> historial = new ArrayList<>(pedido.getHistorialEstados());
         historial.sort((primero, segundo) -> {
             int comparacionFecha = primero.getCambiadoEn().compareTo(segundo.getCambiadoEn());
@@ -41,15 +42,15 @@ public class PedidoMapper {
         dto.setTotal(pedido.getTotal());
         dto.setCreadoEn(pedido.getCreadoEn());
         dto.setEnvio(toDatosEnvioDTO(pedido));
-        dto.setDetalles(pedido.getDetalles().stream()
+        dto.setDetalles(detalles.stream()
                 .map(this::toDetalleDTO)
                 .toList());
         dto.setHistorialEstados(cambiosEstado);
         return dto;
     }
 
-    public PedidoAdminDTOResponse toAdminDTO(Pedido pedido) {
-        PedidoDTOResponse base = toDTO(pedido);
+    public PedidoAdminDTOResponse toAdminDTO(Pedido pedido, List<DetallePedido> detalles) {
+        PedidoDTOResponse base = toDTO(pedido, detalles);
         PedidoAdminDTOResponse dto = new PedidoAdminDTOResponse();
         dto.setIdPedido(base.getIdPedido());
         dto.setNumeroPedido(base.getNumeroPedido());
@@ -64,15 +65,19 @@ public class PedidoMapper {
         return dto;
     }
 
-    public List<PedidoResumenDTOResponse> toResumenDTOList(List<Pedido> pedidos) {
+    public List<PedidoResumenDTOResponse> toResumenDTOList(
+            List<Pedido> pedidos,
+            Map<Long, List<DetallePedido>> detallesPorPedido) {
         return pedidos.stream()
-                .map(this::toResumenDTO)
+                .map(pedido -> toResumenDTO(
+                        pedido,
+                        detallesPorPedido.getOrDefault(pedido.getIdPedido(), List.of())))
                 .toList();
     }
 
-    public PedidoResumenDTOResponse toResumenDTO(Pedido pedido) {
+    private PedidoResumenDTOResponse toResumenDTO(Pedido pedido, List<DetallePedido> detalles) {
         int cantidadItems = 0;
-        for (DetallePedido detalle : pedido.getDetalles()) {
+        for (DetallePedido detalle : detalles) {
             cantidadItems = Math.addExact(cantidadItems, detalle.getCantidad());
         }
 

@@ -1,5 +1,7 @@
 package com.esam.esam_backend.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -7,6 +9,10 @@ import org.springframework.data.repository.query.Param;
 import com.esam.esam_backend.model.Categoria;
 
 public interface CategoriaRepository extends JpaRepository<Categoria, Long>{
+
+    List<Categoria> findByPadreIsNull();
+
+    List<Categoria> findByPadre_IdCategoria(Long idPadre);
 
     long countByPadreIdCategoria(Long idCategoria);
 

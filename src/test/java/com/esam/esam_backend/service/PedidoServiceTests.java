@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -41,7 +43,6 @@ import com.esam.esam_backend.model.Usuario;
 import com.esam.esam_backend.repository.CarritoRepository;
 import com.esam.esam_backend.repository.DireccionRepository;
 import com.esam.esam_backend.repository.PedidoRepository;
-import com.esam.esam_backend.repository.ProductoRepository;
 import com.esam.esam_backend.repository.UsuarioRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,13 +58,16 @@ class PedidoServiceTests {
     private DireccionRepository direccionRepository;
 
     @Mock
-    private ProductoRepository productoRepository;
-
-    @Mock
     private UsuarioRepository usuarioRepository;
 
     @Mock
+    private ProductoService productoService;
+
+    @Mock
     private PedidoMapper pedidoMapper;
+
+    @Mock
+    private DetallePedidoService detallePedidoService;
 
     @InjectMocks
     private PedidoService pedidoService;
@@ -84,10 +88,30 @@ class PedidoServiceTests {
         when(direccionRepository.findByIdDireccionAndUsuarioIdUsuarioAndActivoTrue(9L, 7L))
                 .thenReturn(Optional.of(direccion));
         when(carritoRepository.buscarParaPedidoPorUsuario(7L)).thenReturn(Optional.of(carrito));
-        when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
+        when(productoService.reservarStockParaPedido(3L, 2)).thenAnswer(invocation -> {
+            producto.setStock(producto.getStock() - 2);
+            return producto;
+        });
         when(pedidoRepository.save(any(Pedido.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(pedidoMapper.toDTO(any(Pedido.class))).thenReturn(response);
+        when(detallePedidoService.crear(any(Pedido.class), any(Producto.class), any(Integer.class)))
+                .thenAnswer(invocation -> {
+                    Pedido pedido = invocation.getArgument(0);
+                    Producto productoDetalle = invocation.getArgument(1);
+                    Integer cantidad = invocation.getArgument(2);
+                    DetallePedido detalle = new DetallePedido();
+                    detalle.setPedido(pedido);
+                    detalle.setProducto(productoDetalle);
+                    detalle.setNombreProducto(productoDetalle.getNombre());
+                    detalle.setSkuProducto(productoDetalle.getSku());
+                    detalle.setPrecioUnitario(productoDetalle.getPrecio());
+                    detalle.setCantidad(cantidad);
+                    detalle.setSubtotal(productoDetalle.getPrecio() * cantidad);
+                    pedido.getDetalles().add(detalle);
+                    return detalle;
+                });
+        when(detallePedidoService.obtenerPorPedido(any())).thenReturn(List.of());
+        when(pedidoMapper.toDTO(any(Pedido.class), anyList())).thenReturn(response);
 
         PedidoDTOResponse resultado = pedidoService.crear(7L, request);
 
@@ -129,7 +153,8 @@ class PedidoServiceTests {
         when(direccionRepository.findByIdDireccionAndUsuarioIdUsuarioAndActivoTrue(9L, 7L))
                 .thenReturn(Optional.of(direccion()));
         when(carritoRepository.buscarParaPedidoPorUsuario(7L)).thenReturn(Optional.of(carrito));
-        when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
+        when(productoService.reservarStockParaPedido(3L, 2))
+                .thenThrow(new ConflictoStockException("Stock insuficiente"));
 
         assertThrows(ConflictoStockException.class, () -> pedidoService.crear(7L, request));
         verifyNoInteractions(pedidoMapper);
@@ -155,10 +180,14 @@ class PedidoServiceTests {
 
         when(pedidoRepository.buscarPorIdParaActualizar(12L)).thenReturn(Optional.of(pedido));
         when(usuarioRepository.findById(2L)).thenReturn(Optional.of(administrador));
-        when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
+        doAnswer(invocation -> {
+            producto.setStock(producto.getStock() + 2);
+            return null;
+        }).when(productoService).reponerStockPorCancelacion(3L, 2);
+        when(detallePedidoService.obtenerPorPedido(12L)).thenReturn(List.of(detalle));
         when(pedidoRepository.save(any(Pedido.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(pedidoMapper.toAdminDTO(pedido)).thenReturn(response);
+        when(pedidoMapper.toAdminDTO(pedido, List.of(detalle))).thenReturn(response);
 
         PedidoDTOResponse resultado = pedidoService.cambiarEstado(12L, 2L, request);
 
@@ -168,7 +197,7 @@ class PedidoServiceTests {
         assertEquals(1, pedido.getHistorialEstados().size());
         assertEquals(EstadoPedido.PENDIENTE, pedido.getHistorialEstados().get(0).getEstadoAnterior());
         assertEquals(EstadoPedido.CANCELADO, pedido.getHistorialEstados().get(0).getEstadoNuevo());
-        verify(productoRepository).save(producto);
+        verify(productoService).reponerStockPorCancelacion(3L, 2);
     }
 
     @Test

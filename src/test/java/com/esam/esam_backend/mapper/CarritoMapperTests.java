@@ -2,6 +2,7 @@ package com.esam.esam_backend.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,11 @@ import com.esam.esam_backend.model.Producto;
 
 class CarritoMapperTests {
 
-    private final CarritoMapper mapper = new CarritoMapper();
+    private final ImagenProductoMapper imagenProductoMapper = new ImagenProductoMapper();
+    private final ProductoMapper productoMapper = new ProductoMapper(
+            imagenProductoMapper, new MarcaMapper());
+    private final CarritoMapper mapper = new CarritoMapper(
+            new ItemCarritoMapper(productoMapper));
 
     @Test
     void mapsItemsAndCalculatesCartTotals() {
@@ -65,5 +70,45 @@ class CarritoMapperTests {
         assertEquals(4L, itemResponse.getProducto().getMarca().getIdMarca());
         assertNotNull(itemResponse.getProducto().getImagenPrincipal());
         assertEquals("Producto", itemResponse.getProducto().getImagenPrincipal().getTextoAlternativo());
+    }
+
+    @Test
+    void mapsPrincipalImageByGalleryOrderAndReturnsNullWhenNoneIsPrincipal() {
+        Marca marca = new Marca();
+        marca.setIdMarca(4L);
+        marca.setNombre("Marca");
+
+        ImagenProducto segunda = imagen(10L, 2, "Segunda");
+        ImagenProducto primera = imagen(9L, 1, "Primera");
+        Producto producto = new Producto();
+        producto.setIdProducto(12L);
+        producto.setNombre("Producto");
+        producto.setPrecio(100L);
+        producto.setStock(1);
+        producto.setMarca(marca);
+        producto.setImagenes(new ArrayList<>(List.of(segunda, primera)));
+
+        ItemCarrito item = new ItemCarrito();
+        item.setCantidad(1);
+        item.setProducto(producto);
+        Carrito carrito = new Carrito();
+        carrito.setItems(new ArrayList<>(List.of(item)));
+
+        assertEquals("Primera",
+                mapper.toDTO(carrito).getItems().get(0).getProducto()
+                        .getImagenPrincipal().getTextoAlternativo());
+
+        primera.setPrincipal(false);
+        segunda.setPrincipal(false);
+        assertNull(mapper.toDTO(carrito).getItems().get(0).getProducto().getImagenPrincipal());
+    }
+
+    private ImagenProducto imagen(Long id, Integer orden, String textoAlternativo) {
+        ImagenProducto imagen = new ImagenProducto();
+        imagen.setIdImagenProducto(id);
+        imagen.setOrden(orden);
+        imagen.setPrincipal(true);
+        imagen.setTextoAlternativo(textoAlternativo);
+        return imagen;
     }
 }

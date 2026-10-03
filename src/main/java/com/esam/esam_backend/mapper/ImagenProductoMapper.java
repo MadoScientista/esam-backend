@@ -16,7 +16,9 @@ public class ImagenProductoMapper {
         ImagenProductoResponse dto = new ImagenProductoResponse();
         dto.setIdImagenProducto(entity.getIdImagenProducto());
         dto.setUrl(entity.getUrl());
+        dto.setTextoAlternativo(entity.getTextoAlternativo());
         dto.setOrden(entity.getOrden());
+        dto.setPrincipal(entity.getPrincipal());
         return dto;
     }
 
@@ -26,6 +28,15 @@ public class ImagenProductoMapper {
                         .thenComparing(ImagenProducto::getIdImagenProducto))
                 .map(this::toDTO)
                 .toList();
+    }
+
+    public ImagenProductoResponse toImagenPrincipalDTO(Producto producto) {
+        return producto.getImagenes().stream()
+                .filter(imagen -> Boolean.TRUE.equals(imagen.getPrincipal()))
+                .min(Comparator.comparing(ImagenProducto::getOrden)
+                        .thenComparing(ImagenProducto::getIdImagenProducto))
+                .map(this::toDTO)
+                .orElse(null);
     }
 
     public ImagenProducto toEntity(String url, String idPublico, Producto producto, Integer orden) {

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -14,7 +15,6 @@ import com.esam.esam_backend.dto.pedido.PedidoDTOResponse;
 import com.esam.esam_backend.dto.pedido.PedidoEstadoDTORequest;
 import com.esam.esam_backend.dto.pedido.PedidoResumenDTOResponse;
 import com.esam.esam_backend.enums.EstadoPedido;
-import com.esam.esam_backend.exception.ConflictoStockException;
 import com.esam.esam_backend.exception.DireccionNoEncontradaException;
 import com.esam.esam_backend.exception.PedidoInvalidoException;
 import com.esam.esam_backend.exception.PedidoNoEncontradoException;
@@ -31,7 +31,6 @@ import com.esam.esam_backend.model.Usuario;
 import com.esam.esam_backend.repository.CarritoRepository;
 import com.esam.esam_backend.repository.DireccionRepository;
 import com.esam.esam_backend.repository.PedidoRepository;
-import com.esam.esam_backend.repository.ProductoRepository;
 import com.esam.esam_backend.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -43,9 +42,10 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     private final CarritoRepository carritoRepository;
     private final DireccionRepository direccionRepository;
-    private final ProductoRepository productoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PedidoMapper pedidoMapper;
+    private final DetallePedidoService detallePedidoService;
+    private final ProductoService productoService;
 
     @Transactional
     public PedidoDTOResponse crear(Long idUsuario, PedidoDTORequest request) {
@@ -71,19 +71,11 @@ public class PedidoService {
         long total = 0;
 
         for (ItemCarrito item : items) {
-            Producto producto = productoRepository.buscarPorIdParaPedido(
-                            item.getProducto().getIdProducto())
-                    .orElseThrow(() -> new PedidoInvalidoException(
-                            "Uno de los productos del carrito ya no está disponible"));
+            Producto producto = productoService.reservarStockParaPedido(
+                    item.getProducto().getIdProducto(), item.getCantidad());
 
-            validarProductoParaPedido(producto, item.getCantidad());
-            long subtotal = Math.multiplyExact(producto.getPrecio(), item.getCantidad().longValue());
-            total = Math.addExact(total, subtotal);
-            producto.setStock(producto.getStock() - item.getCantidad());
-            productoRepository.save(producto);
-
-            DetallePedido detalle = crearDetalle(pedido, producto, item.getCantidad(), subtotal);
-            pedido.getDetalles().add(detalle);
+            DetallePedido detalle = detallePedidoService.crear(pedido, producto, item.getCantidad());
+            total = Math.addExact(total, detalle.getSubtotal());
         }
 
         pedido.setTotal(total);
@@ -92,13 +84,19 @@ public class PedidoService {
         Pedido guardado = pedidoRepository.save(pedido);
         carrito.getItems().clear();
         carritoRepository.save(carrito);
-        return pedidoMapper.toDTO(guardado);
+        return pedidoMapper.toDTO(
+                guardado,
+                detallePedidoService.obtenerPorPedido(guardado.getIdPedido()));
     }
 
     @Transactional(readOnly = true)
     public List<PedidoResumenDTOResponse> obtenerHistorial(Long idUsuario) {
+        List<Pedido> pedidos =
+                pedidoRepository.findByUsuario_IdUsuarioOrderByCreadoEnDescIdPedidoDesc(idUsuario);
         return pedidoMapper.toResumenDTOList(
-                pedidoRepository.findByUsuario_IdUsuarioOrderByCreadoEnDescIdPedidoDesc(idUsuario));
+                pedidos,
+                detallePedidoService.obtenerPorPedidos(
+                        pedidos.stream().map(pedido -> pedido.getIdPedido()).toList()));
     }
 
     @Transactional(readOnly = true)
@@ -106,16 +104,21 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findByIdPedidoAndUsuario_IdUsuario(idPedido, idUsuario)
                 .orElseThrow(() -> new PedidoNoEncontradoException(
                         "No existe un pedido con id " + idPedido));
-        return pedidoMapper.toDTO(pedido);
+        return pedidoMapper.toDTO(pedido, detallePedidoService.obtenerPorPedido(idPedido));
     }
 
     @Transactional(readOnly = true)
     public List<PedidoDTOResponse> obtenerTodosParaAdmin() {
-        List<PedidoDTOResponse> pedidos = new ArrayList<>();
-        for (Pedido pedido : pedidoRepository.findAllByOrderByCreadoEnDescIdPedidoDesc()) {
-            pedidos.add(pedidoMapper.toAdminDTO(pedido));
+        List<Pedido> pedidos = pedidoRepository.findAllByOrderByCreadoEnDescIdPedidoDesc();
+        Map<Long, List<DetallePedido>> detallesPorPedido = detallePedidoService.obtenerPorPedidos(
+                pedidos.stream().map(pedido -> pedido.getIdPedido()).toList());
+        List<PedidoDTOResponse> respuestas = new ArrayList<>();
+        for (Pedido pedido : pedidos) {
+            respuestas.add(pedidoMapper.toAdminDTO(
+                    pedido,
+                    detallesPorPedido.getOrDefault(pedido.getIdPedido(), List.of())));
         }
-        return pedidos;
+        return respuestas;
     }
 
     @Transactional(readOnly = true)
@@ -123,7 +126,7 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(idPedido)
                 .orElseThrow(() -> new PedidoNoEncontradoException(
                         "No existe un pedido con id " + idPedido));
-        return pedidoMapper.toAdminDTO(pedido);
+        return pedidoMapper.toAdminDTO(pedido, detallePedidoService.obtenerPorPedido(idPedido));
     }
 
     @Transactional
@@ -140,13 +143,16 @@ public class PedidoService {
 
         validarTransicion(pedido.getEstado(), request.getEstado());
         if (request.getEstado() == EstadoPedido.CANCELADO) {
-            reponerStock(pedido);
+            reponerStock(idPedido);
         }
 
         Instant ahora = Instant.now();
         registrarCambioEstado(pedido, pedido.getEstado(), request.getEstado(), administrador, ahora);
         pedido.setEstado(request.getEstado());
-        return pedidoMapper.toAdminDTO(pedidoRepository.save(pedido));
+        Pedido guardado = pedidoRepository.save(pedido);
+        return pedidoMapper.toAdminDTO(
+                guardado,
+                detallePedidoService.obtenerPorPedido(idPedido));
     }
 
     private Pedido crearPedido(Usuario usuario, Direccion direccion, Instant creadoEn) {
@@ -166,29 +172,6 @@ public class PedidoService {
         return pedido;
     }
 
-    private DetallePedido crearDetalle(Pedido pedido, Producto producto, int cantidad, long subtotal) {
-        DetallePedido detalle = new DetallePedido();
-        detalle.setPedido(pedido);
-        detalle.setProducto(producto);
-        detalle.setNombreProducto(producto.getNombre());
-        detalle.setSkuProducto(producto.getSku());
-        detalle.setPrecioUnitario(producto.getPrecio());
-        detalle.setCantidad(cantidad);
-        detalle.setSubtotal(subtotal);
-        return detalle;
-    }
-
-    private void validarProductoParaPedido(Producto producto, int cantidad) {
-        if (!Boolean.TRUE.equals(producto.getActivo())) {
-            throw new PedidoInvalidoException(
-                    "El producto " + producto.getIdProducto() + " ya no está disponible");
-        }
-        if (producto.getStock() < cantidad) {
-            throw new ConflictoStockException(
-                    "Stock insuficiente para el producto " + producto.getIdProducto());
-        }
-    }
-
     private void validarTransicion(EstadoPedido actual, EstadoPedido siguiente) {
         boolean valida = switch (actual) {
             case PENDIENTE -> siguiente == EstadoPedido.CONFIRMADO || siguiente == EstadoPedido.CANCELADO;
@@ -203,22 +186,13 @@ public class PedidoService {
         }
     }
 
-    private void reponerStock(Pedido pedido) {
-        List<DetallePedido> detalles = pedido.getDetalles().stream()
+    private void reponerStock(Long idPedido) {
+        List<DetallePedido> detalles = detallePedidoService.obtenerPorPedido(idPedido).stream()
                 .sorted(Comparator.comparing(detalle -> detalle.getProducto().getIdProducto()))
                 .toList();
         for (DetallePedido detalle : detalles) {
-            Producto producto = productoRepository.buscarPorIdParaPedido(
-                            detalle.getProducto().getIdProducto())
-                    .orElseThrow(() -> new PedidoInvalidoException(
-                            "No se puede reponer el stock de un producto inexistente"));
-            try {
-                producto.setStock(Math.addExact(producto.getStock(), detalle.getCantidad()));
-            } catch (ArithmeticException exception) {
-                throw new ConflictoStockException(
-                        "No se puede reponer el stock del producto " + producto.getIdProducto());
-            }
-            productoRepository.save(producto);
+            productoService.reponerStockPorCancelacion(
+                    detalle.getProducto().getIdProducto(), detalle.getCantidad());
         }
     }
 

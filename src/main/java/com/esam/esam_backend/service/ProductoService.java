@@ -10,6 +10,8 @@ import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.exception.ConflictoStockException;
 import com.esam.esam_backend.exception.ProductoConImagenesException;
 import com.esam.esam_backend.exception.ProductoInvalidoException;
+import com.esam.esam_backend.exception.PedidoInvalidoException;
+import com.esam.esam_backend.repository.MarcaRepository;
 import com.esam.esam_backend.mapper.ProductoMapper;
 import com.esam.esam_backend.model.Marca;
 import com.esam.esam_backend.model.Producto;
@@ -22,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductoService {
 
     private final ProductoRepository pRepo;
-
+    private final MarcaRepository marcaRepository;
     private final ProductoMapper pMapper;
 
     private final ImagenProductoService imagenProductoService;
@@ -69,9 +71,10 @@ public class ProductoService {
     }
 
     // Guardar
-    public Producto guardar(Producto producto) {
-        validarPrecio(producto.getPrecio());
-        validarStock(producto.getStock());
+    public Producto guardar(ProductoDTORequest datos) {
+        validarPrecio(datos.getPrecio());
+        validarStock(datos.getStock());
+        Producto producto = pMapper.toEntity(datos, resolverMarca(datos.getIdMarca()));
         return pRepo.save(producto);
     }
 
@@ -84,9 +87,19 @@ public class ProductoService {
         producto.setDescripcion(datos.getDescripcion());
         producto.setPrecio(datos.getPrecio());
         producto.setStock(datos.getStock());
-        Marca marca = pMapper.resolverMarcaParaEdicion(datos.getIdMarca(), producto);
-        producto.setMarca(marca);
+        if (datos.getIdMarca() != null) {
+            producto.setMarca(resolverMarca(datos.getIdMarca()));
+        }
         return pRepo.save(producto);
+    }
+
+    private Marca resolverMarca(Long idMarca) {
+        if (idMarca == null) {
+            return null;
+        }
+        return marcaRepository.findById(idMarca)
+                .orElseThrow(() -> new ProductoInvalidoException(
+                        "No existe una marca con ID " + idMarca));
     }
 
     // Borrar
@@ -144,6 +157,36 @@ public class ProductoService {
         }
         producto.setStock(producto.getStock() + unidades);
         return pRepo.save(producto);
+    }
+
+    public Producto reservarStockParaPedido(Long idProducto, Integer cantidad) {
+        Producto producto = pRepo.buscarPorIdParaPedido(idProducto)
+                .orElseThrow(() -> new PedidoInvalidoException(
+                        "Uno de los productos del carrito ya no está disponible"));
+        if (!Boolean.TRUE.equals(producto.getActivo())) {
+            throw new PedidoInvalidoException(
+                    "El producto " + producto.getIdProducto() + " ya no está disponible");
+        }
+        if (producto.getStock() < cantidad) {
+            throw new ConflictoStockException(
+                    "Stock insuficiente para el producto " + producto.getIdProducto());
+        }
+
+        producto.setStock(producto.getStock() - cantidad);
+        return pRepo.save(producto);
+    }
+
+    public void reponerStockPorCancelacion(Long idProducto, Integer cantidad) {
+        Producto producto = pRepo.buscarPorIdParaPedido(idProducto)
+                .orElseThrow(() -> new PedidoInvalidoException(
+                        "No se puede reponer el stock de un producto inexistente"));
+        try {
+            producto.setStock(Math.addExact(producto.getStock(), cantidad));
+        } catch (ArithmeticException exception) {
+            throw new ConflictoStockException(
+                    "No se puede reponer el stock del producto " + producto.getIdProducto());
+        }
+        pRepo.save(producto);
     }
 
     private void validarStock(Integer valor) {

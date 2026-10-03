@@ -7,21 +7,20 @@ import org.springframework.stereotype.Component;
 
 import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.dto.producto.ProductoDTOResponse;
-import com.esam.esam_backend.exception.ProductoInvalidoException;
+import com.esam.esam_backend.dto.producto.ProductoResumenDTOResponse;
 import com.esam.esam_backend.model.Marca;
 import com.esam.esam_backend.model.Producto;
-import com.esam.esam_backend.repository.MarcaRepository;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor 
 @Component 
 public class ProductoMapper {
 
-    private final MarcaRepository marcaRepository;
-
     private final ImagenProductoMapper imagenProductoMapper;
+    private final MarcaMapper marcaMapper;
 
+    public ProductoMapper(ImagenProductoMapper imagenProductoMapper, MarcaMapper marcaMapper) {
+        this.imagenProductoMapper = imagenProductoMapper;
+        this.marcaMapper = marcaMapper;
+    }
 
     public ProductoDTOResponse toDTO(Producto producto) {
         ProductoDTOResponse dto = new ProductoDTOResponse();
@@ -35,34 +34,30 @@ public class ProductoMapper {
         return dto;
     }
 
+    public ProductoResumenDTOResponse toResumenDTO(Producto producto) {
+        ProductoResumenDTOResponse dto = new ProductoResumenDTOResponse();
+        dto.setIdProducto(producto.getIdProducto());
+        dto.setNombre(producto.getNombre());
+        dto.setPrecio(producto.getPrecio());
+        dto.setImagenPrincipal(imagenProductoMapper.toImagenPrincipalDTO(producto));
+        dto.setMarca(marcaMapper.toDTO(producto.getMarca()));
+        dto.setStock(producto.getStock());
+        return dto;
+    }
+
     public List<ProductoDTOResponse> toDTOList(List<Producto> productos) {
         return productos.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public Producto toEntity(ProductoDTORequest dto) {
+    public Producto toEntity(ProductoDTORequest dto, Marca marca) {
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
         producto.setPrecio(dto.getPrecio());
         producto.setStock(dto.getStock());
-        producto.setMarca(resolverMarca(dto.getIdMarca()));
+        producto.setMarca(marca);
         return producto;
-    }
-
-    private Marca resolverMarca(Long idMarca) {
-        if (idMarca == null) {
-            return null;
-        }
-        return marcaRepository.findById(idMarca)
-            .orElseThrow(() -> new ProductoInvalidoException("No existe una marca con ID " + idMarca));
-    }
-
-    public Marca resolverMarcaParaEdicion(Long idMarca, Producto producto) {
-        if (idMarca == null) {
-            return producto.getMarca();
-        }
-        return resolverMarca(idMarca);
     }
 }

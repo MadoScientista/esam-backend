@@ -26,12 +26,14 @@ public class ProductoMapper {
 
     public ProductoDTOResponse toDTO(Producto producto) {
         ProductoDTOResponse dto = new ProductoDTOResponse();
+        dto.setIdProducto(producto.getIdProducto());
         dto.setSku(producto.getSku());
         dto.setNombre(producto.getNombre());
         dto.setDescripcion(producto.getDescripcion());
         dto.setMarca(producto.getMarca().getNombre());
         dto.setPrecio(producto.getPrecio());
         dto.setStock(producto.getStock());
+        dto.setMarcaDetalle(marcaMapper.toDTO(producto.getMarca()));
         dto.setImagenes(imagenProductoMapper.toDTOList(producto.getImagenes()));
         return dto;
     }

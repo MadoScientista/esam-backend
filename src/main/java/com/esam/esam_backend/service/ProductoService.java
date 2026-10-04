@@ -10,6 +10,7 @@ import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.exception.ConflictoStockException;
 import com.esam.esam_backend.exception.ProductoConImagenesException;
 import com.esam.esam_backend.exception.ProductoInvalidoException;
+import com.esam.esam_backend.exception.ProductoNoEncontradoException;
 import com.esam.esam_backend.exception.PedidoInvalidoException;
 import com.esam.esam_backend.repository.MarcaRepository;
 import com.esam.esam_backend.mapper.ProductoMapper;
@@ -37,7 +38,8 @@ public class ProductoService {
 
     // Obtener según su id
     public Producto obtenerPorId(Long sku) {
-        return pRepo.findById(sku).orElse(null);
+        return pRepo.findById(sku)
+                .orElseThrow(() -> new ProductoNoEncontradoException("No existe un producto con id " + sku));
     }
 
     // Obtener según su marca

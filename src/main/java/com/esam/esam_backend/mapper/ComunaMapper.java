@@ -17,6 +17,7 @@ public class ComunaMapper {
         ComunaDTO dto = new ComunaDTO();
         dto.setIdComuna(comuna.getIdComuna());
         dto.setNombre(comuna.getNombre());
+        dto.setIdRegion(comuna.getRegion().getIdRegion());
         return dto;
     }
 

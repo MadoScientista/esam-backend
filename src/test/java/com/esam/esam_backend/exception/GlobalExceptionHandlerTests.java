@@ -3,8 +3,12 @@ package com.esam.esam_backend.exception;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 class GlobalExceptionHandlerTests {
@@ -29,6 +33,26 @@ class GlobalExceptionHandlerTests {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("PRODUCTO_INVALIDO", response.getBody().code());
+    }
+
+    @Test
+    void includesFieldValidationDetailsInErrorArray() throws NoSuchMethodException {
+        var bindingResult = new BeanPropertyBindingResult(new Object(), "request");
+        bindingResult.addError(new FieldError("request", "nombre", "no debe estar vacío"));
+        var parameter = new MethodParameter(
+                GlobalExceptionHandler.class.getMethod(
+                        "manejarValidacion", MethodArgumentNotValidException.class,
+                        jakarta.servlet.http.HttpServletRequest.class),
+                0);
+        var exception = new MethodArgumentNotValidException(parameter, bindingResult);
+
+        var response = handler.manejarValidacion(exception, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("nombre: no debe estar vacío", response.getBody().message());
+        assertEquals(1, response.getBody().errores().size());
+        assertEquals("nombre", response.getBody().errores().get(0).getCampo());
+        assertEquals("no debe estar vacío", response.getBody().errores().get(0).getMensaje());
     }
 
     @Test

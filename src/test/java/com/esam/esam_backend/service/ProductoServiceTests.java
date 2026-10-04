@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.esam.esam_backend.exception.ConflictoStockException;
 import com.esam.esam_backend.exception.PedidoInvalidoException;
+import com.esam.esam_backend.exception.ProductoNoEncontradoException;
 import com.esam.esam_backend.mapper.ProductoMapper;
 import com.esam.esam_backend.model.Producto;
 import com.esam.esam_backend.repository.MarcaRepository;
@@ -39,6 +40,17 @@ class ProductoServiceTests {
 
     @InjectMocks
     private ProductoService productoService;
+
+    @Test
+    void obtenerProductoInexistenteLanzaExcepcionNotFound() {
+        when(productoRepository.findById(42L)).thenReturn(Optional.empty());
+
+        ProductoNoEncontradoException exception = assertThrows(
+                ProductoNoEncontradoException.class,
+                () -> productoService.obtenerPorId(42L));
+
+        assertEquals("No existe un producto con id 42", exception.getMessage());
+    }
 
     @Test
     void reservarStockBloqueaYGuardaLaCantidadActualizada() {

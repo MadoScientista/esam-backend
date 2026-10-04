@@ -22,7 +22,9 @@ su **stock** y las **imágenes** de cada producto.
   domicilio de los usuarios.
 - Al iniciar por primera vez, crea la base de datos, las tablas y los **datos de
   ejemplo** (16 regiones, 346 comunas, 3 roles y 4 marcas) de forma automática.
-  No se crean usuarios ni productos de ejemplo: hay que cargarlos por la API.
+  No se crean usuarios ni productos de ejemplo en la configuración normal.
+  El perfil opcional `dev` carga tres productos de demostración para probar el
+  catálogo.
 
 > El registro es público, pero toda cuenta creada por esa vía nace con el rol
 > `cliente`. Crear cuentas de `admin` o `vendedor` requiere un token de
@@ -88,6 +90,16 @@ arrancar, sin necesidad de exportarlo en la terminal.
 
 La aplicación queda disponible en **http://localhost:8080**. La base de datos se
 crea y se llena sola en el primer inicio (no hace falta hacer nada más).
+
+Para cargar los productos de demostración en un entorno local, inicia la
+aplicación con el perfil `dev`:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+Este perfil agrega los productos de muestra mediante una migración repetible.
+Úsalo solo con una base de datos de desarrollo; no se activa por defecto.
 
 ### 5. Crear el primer usuario
 

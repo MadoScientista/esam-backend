@@ -35,7 +35,7 @@ public class RegionMapper {
     public RegionComunasDTO toConComunasDTO(Region region) {
         RegionComunasDTO dto = new RegionComunasDTO();
         dto.setIdRegion(region.getIdRegion());
-        dto.setRegion(region.getNombre());
+        dto.setNombre(region.getNombre());
         dto.setComunas(comunaMapper.toDTOList(region.getComunas()));
         return dto;
     }

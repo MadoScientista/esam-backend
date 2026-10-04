@@ -1,6 +1,7 @@
 package com.esam.esam_backend.exception;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.esam.esam_backend.dto.error.ApiErrorResponse;
+import com.esam.esam_backend.dto.error.CampoErrorDTOResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -222,10 +224,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> manejarValidacion(
             MethodArgumentNotValidException exception,
             HttpServletRequest request) {
-        String message = exception.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+        List<CampoErrorDTOResponse> errores = exception.getBindingResult().getFieldErrors().stream()
+                .map(error -> {
+                    CampoErrorDTOResponse campoError = new CampoErrorDTOResponse();
+                    campoError.setCampo(error.getField());
+                    campoError.setMensaje(error.getDefaultMessage());
+                    return campoError;
+                })
+                .toList();
+        String message = errores.stream()
+                .map(error -> error.getCampo() + ": " + error.getMensaje())
                 .collect(Collectors.joining("; "));
-        return respuesta(HttpStatus.BAD_REQUEST, "ERROR_VALIDACION", message, request);
+        return respuesta(HttpStatus.BAD_REQUEST, "ERROR_VALIDACION", message, request, errores);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -291,13 +301,23 @@ public class GlobalExceptionHandler {
             String code,
             String message,
             HttpServletRequest request) {
+        return respuesta(status, code, message, request, List.of());
+    }
+
+    private ResponseEntity<ApiErrorResponse> respuesta(
+            HttpStatus status,
+            String code,
+            String message,
+            HttpServletRequest request,
+            List<CampoErrorDTOResponse> errores) {
         ApiErrorResponse body = new ApiErrorResponse(
                 Instant.now(),
                 status.value(),
                 status.getReasonPhrase(),
                 code,
                 message,
-                request.getRequestURI());
+                request.getRequestURI(),
+                errores);
         return ResponseEntity.status(status).body(body);
     }
 }

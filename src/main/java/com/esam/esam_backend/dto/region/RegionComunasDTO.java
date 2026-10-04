@@ -19,7 +19,7 @@ public class RegionComunasDTO {
     
     @NotBlank
     @Size(max = 50)
-    private String region;
+    private String nombre;
     
     private List<ComunaDTO> comunas;
 

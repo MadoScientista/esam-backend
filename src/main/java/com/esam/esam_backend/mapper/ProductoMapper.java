@@ -1,6 +1,7 @@
 package com.esam.esam_backend.mapper;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.dto.producto.ProductoDTOResponse;
 import com.esam.esam_backend.dto.producto.ProductoResumenDTOResponse;
+import com.esam.esam_backend.model.Categoria;
 import com.esam.esam_backend.model.Marca;
 import com.esam.esam_backend.model.Producto;
 
@@ -51,13 +53,15 @@ public class ProductoMapper {
                 .collect(Collectors.toList());
     }
 
-    public Producto toEntity(ProductoDTORequest dto, Marca marca) {
+    public Producto toEntity(ProductoDTORequest dto, Marca marca, Set<Categoria> categorias) {
         Producto producto = new Producto();
+        producto.setSku(dto.getSku());
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
         producto.setPrecio(dto.getPrecio());
         producto.setStock(dto.getStock());
         producto.setMarca(marca);
+        producto.setCategorias(categorias);
         return producto;
     }
 }

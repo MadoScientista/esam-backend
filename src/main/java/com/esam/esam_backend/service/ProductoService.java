@@ -1,21 +1,26 @@
 package com.esam.esam_backend.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.esam.esam_backend.dto.producto.ProductoDTORequest;
+import com.esam.esam_backend.exception.CategoriaNoEncontradaException;
 import com.esam.esam_backend.exception.ConflictoStockException;
 import com.esam.esam_backend.exception.ProductoConImagenesException;
 import com.esam.esam_backend.exception.ProductoInvalidoException;
 import com.esam.esam_backend.exception.ProductoNoEncontradoException;
 import com.esam.esam_backend.exception.PedidoInvalidoException;
-import com.esam.esam_backend.repository.MarcaRepository;
 import com.esam.esam_backend.mapper.ProductoMapper;
+import com.esam.esam_backend.model.Categoria;
 import com.esam.esam_backend.model.Marca;
 import com.esam.esam_backend.model.Producto;
+import com.esam.esam_backend.repository.CategoriaRepository;
+import com.esam.esam_backend.repository.MarcaRepository;
 import com.esam.esam_backend.repository.ProductoRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +31,7 @@ public class ProductoService {
 
     private final ProductoRepository pRepo;
     private final MarcaRepository marcaRepository;
+    private final CategoriaRepository categoriaRepository;
     private final ProductoMapper pMapper;
 
     private final ImagenProductoService imagenProductoService;
@@ -76,8 +82,28 @@ public class ProductoService {
     public Producto guardar(ProductoDTORequest datos) {
         validarPrecio(datos.getPrecio());
         validarStock(datos.getStock());
-        Producto producto = pMapper.toEntity(datos, resolverMarca(datos.getIdMarca()));
+        Producto producto = pMapper.toEntity(
+                datos,
+                resolverMarca(datos.getIdMarca()),
+                resolverCategorias(datos.getIdCategorias()));
         return pRepo.save(producto);
+    }
+
+    private Set<Categoria> resolverCategorias(Set<Long> idsCategorias) {
+        List<Categoria> categorias = categoriaRepository.findAllById(idsCategorias);
+        Set<Long> idsEncontrados = new HashSet<>();
+        for (Categoria categoria : categorias) {
+            idsEncontrados.add(categoria.getIdCategoria());
+        }
+
+        for (Long idCategoria : idsCategorias) {
+            if (!idsEncontrados.contains(idCategoria)) {
+                throw new CategoriaNoEncontradaException(
+                        "No existe una categoría con id " + idCategoria);
+            }
+        }
+
+        return new HashSet<>(categorias);
     }
 
     // Editar

@@ -65,10 +65,11 @@ public class SecurityConfig {
         // Reglas de acceso. El orden importa: gana el primer patron que
         // coincide, asi que las rutas concretas van antes que los comodines.
         .authorizeHttpRequests(auth -> auth
-            // Catálogo público: cualquiera puede navegar productos, marcas,
-            // regiones, comunas y roles sin token.
+            // Catálogo público: cualquiera puede navegar productos, categorías,
+            // marcas, regiones, comunas y roles sin token.
             .requestMatchers(HttpMethod.GET,
                 "/api/productos", "/api/productos/**",
+                "/api/categorias", "/api/categorias/**",
                 "/api/marcas", "/api/marcas/**",
                 "/api/regiones", "/api/regiones/**",
                 "/api/comunas", "/api/comunas/**",
@@ -104,8 +105,7 @@ public class SecurityConfig {
                 "/api/productos/**")
             .hasAnyRole("admin", "vendedor")
 
-            // Las categorías se consultan según las reglas existentes;
-            // solo admin puede crear, editar o eliminar.
+            // Solo admin puede crear, editar o eliminar categorías.
             .requestMatchers(HttpMethod.POST, "/api/categorias", "/api/categorias/**")
             .hasRole("admin")
             .requestMatchers(HttpMethod.PUT, "/api/categorias/**")

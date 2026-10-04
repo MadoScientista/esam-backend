@@ -611,8 +611,8 @@ el cliente envía solo los campos de `CategoriaDTORequest`. `imagenUrl` será
 
 `PUT` usa la misma estructura con el ID en la ruta. `DELETE` se envía sin cuerpo.
 Las consultas de categorías (`GET /api/categorias`, `/raiz`,
-`/padre/{idPadre}` y `/{id}`) requieren token actualmente. Sus escrituras son
-exclusivas de admin.
+`/padre/{idPadre}` y `/{id}`) son públicas y no requieren token. Sus escrituras
+son exclusivas de admin.
 
 Para subir o reemplazar la imagen de portada, admin envía `multipart/form-data`
 con el campo `file` a `POST /api/categorias/{id}/imagen`. Se aceptan JPEG, PNG y

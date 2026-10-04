@@ -4,6 +4,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -73,9 +74,22 @@ class CategoriaControllerSecurityTests {
                 .thenReturn(categoria);
         when(categoriaService.editar(org.mockito.ArgumentMatchers.eq(1L),
                 org.mockito.ArgumentMatchers.any(CategoriaDTORequest.class))).thenReturn(categoria);
+        when(categoriaService.obtenerPorId(1L)).thenReturn(categoria);
         when(categoriaService.guardarImagen(org.mockito.ArgumentMatchers.eq(1L),
             org.mockito.ArgumentMatchers.any(MultipartFile.class))).thenReturn(categoria);
         when(categoriaMapper.toDTO(categoria)).thenReturn(categoriaDTO);
+    }
+
+    @Test
+    void consultasDeCategoriasSonPublicas() throws Exception {
+        mockMvc.perform(get("/api/categorias"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/categorias/raiz"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/categorias/padre/1"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/categorias/1"))
+                .andExpect(status().isOk());
     }
 
     @Test

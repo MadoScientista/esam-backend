@@ -27,6 +27,10 @@ definición del endpoint: tener acceso de lectura no implica permiso de escritur
 | `GET` | `/api/productos/stock?min={min}&max={max}` | Filtrar productos por stock. |
 | `GET` | `/api/productos/nombre?nombre={nombre}` | Filtrar productos por nombre. |
 | `GET` | `/api/productos/{sku}/imagenes` | Listar imágenes de un producto. |
+| `GET` | `/api/categorias` | Listar categorías. |
+| `GET` | `/api/categorias/raiz` | Listar categorías raíz. |
+| `GET` | `/api/categorias/padre/{idPadre}` | Listar subcategorías de una categoría. |
+| `GET` | `/api/categorias/{id}` | Obtener categoría por ID. |
 | `GET` | `/api/marcas` | Listar marcas. |
 | `GET` | `/api/marcas/{id}` | Obtener marca por ID. |
 | `GET` | `/api/regiones` | Listar regiones. |
@@ -38,18 +42,12 @@ definición del endpoint: tener acceso de lectura no implica permiso de escritur
 | `GET` | `/api/roles` | Listar roles. |
 | `GET` | `/api/roles/{id}` | Obtener rol por ID. |
 
-> **Categorías no son públicas actualmente.** Aunque sus consultas son de
-> lectura, los `GET /api/categorias...` requieren autenticación por la regla
-> general de seguridad. No se consideran parte del catálogo público en la
-> configuración vigente.
-
 ## Matriz de acceso por rol del sistema
 
 | Grupo de endpoints | Público | Cliente | Vendedor | Admin |
 |---|:---:|:---:|:---:|:---:|
 | Login y registro (`POST /api/usuarios/login`, `POST /api/usuarios`) | Sí | Sí | Sí | Sí |
-| Lecturas públicas de productos, imágenes, marcas, regiones, comunas y roles | Sí | Sí | Sí | Sí |
-| Lecturas de categorías (`GET /api/categorias...`) | — | Sí | Sí | Sí |
+| Lecturas públicas de productos, imágenes, categorías, marcas, regiones, comunas y roles | Sí | Sí | Sí | Sí |
 | Crear, editar y eliminar productos e imágenes; cambiar stock | — | — | Sí | Sí |
 | Crear, editar y eliminar categorías | — | — | — | Sí |
 | Crear, editar y eliminar marcas, regiones, comunas y roles | — | — | — | Sí |

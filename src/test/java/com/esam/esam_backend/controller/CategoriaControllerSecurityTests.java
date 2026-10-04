@@ -4,6 +4,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -17,8 +18,10 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.esam.esam_backend.dto.categoria.CategoriaDTO;
 import com.esam.esam_backend.dto.categoria.CategoriaDTORequest;
@@ -70,6 +73,8 @@ class CategoriaControllerSecurityTests {
                 .thenReturn(categoria);
         when(categoriaService.editar(org.mockito.ArgumentMatchers.eq(1L),
                 org.mockito.ArgumentMatchers.any(CategoriaDTORequest.class))).thenReturn(categoria);
+        when(categoriaService.guardarImagen(org.mockito.ArgumentMatchers.eq(1L),
+            org.mockito.ArgumentMatchers.any(MultipartFile.class))).thenReturn(categoria);
         when(categoriaMapper.toDTO(categoria)).thenReturn(categoriaDTO);
     }
 
@@ -114,6 +119,28 @@ class CategoriaControllerSecurityTests {
         verify(categoriaService).editar(org.mockito.ArgumentMatchers.eq(1L),
                 org.mockito.ArgumentMatchers.any(CategoriaDTORequest.class));
         verify(categoriaService).borrar(1L);
+    }
+
+    @Test
+    void soloAdministradorPuedeGestionarImagenDeCategoria() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "categoria.png", "image/png", new byte[] { 1, 2, 3 });
+
+        mockMvc.perform(multipart("/api/categorias/1/imagen")
+                .file(file)
+                .with(user("vendedor").roles("vendedor")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(multipart("/api/categorias/1/imagen")
+                .file(file)
+                .with(user("admin").roles("admin")))
+                .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/categorias/1/imagen")
+                .with(user("admin").roles("admin")))
+                .andExpect(status().isNoContent());
+
+        verify(categoriaService).guardarImagen(org.mockito.ArgumentMatchers.eq(1L),
+                org.mockito.ArgumentMatchers.any(MultipartFile.class));
+        verify(categoriaService).borrarImagen(1L);
     }
 
     @TestConfiguration

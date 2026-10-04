@@ -11,4 +11,5 @@ public class CategoriaDTO {
     private String nombre;
     private String slug;
     private Long idCategoriaPadre;
+    private String imagenUrl;
 }

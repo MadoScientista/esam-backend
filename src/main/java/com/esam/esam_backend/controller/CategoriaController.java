@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.esam.esam_backend.dto.categoria.CategoriaDTO;
 import com.esam.esam_backend.dto.categoria.CategoriaDTORequest;
@@ -66,6 +68,20 @@ public class CategoriaController {
     public ResponseEntity<CategoriaDTO> editar(@PathVariable Long id, @RequestBody @Valid CategoriaDTORequest request) {
         Categoria categoria = categoriaService.editar(id, request);
         return ResponseEntity.ok(cMapper.toDTO(categoria));
+    }
+
+    @PostMapping("/{id}/imagen")
+    public ResponseEntity<CategoriaDTO> guardarImagen(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        Categoria categoria = categoriaService.guardarImagen(id, file);
+        return ResponseEntity.ok(cMapper.toDTO(categoria));
+    }
+
+    @DeleteMapping("/{id}/imagen")
+    public ResponseEntity<Void> borrarImagen(@PathVariable Long id) {
+        categoriaService.borrarImagen(id);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

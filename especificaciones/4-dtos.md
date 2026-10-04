@@ -466,6 +466,32 @@ Eliminar una imagen usa
 todas las imágenes de un producto usa
 `DELETE /api/productos/{idProducto}/imagenes`.
 
+Solo admin puede elegir la imagen principal de un producto mediante
+`PUT /api/productos/{sku}/imagenes/{idImagenProducto}/principal`. No requiere
+cuerpo: el ID de la imagen seleccionada va en la ruta. El servidor marca esa
+imagen como `principal: true` y desmarca las demás imágenes del producto en
+una sola operación. Devuelve `200 OK` con el `ImagenProductoResponse` actualizado:
+
+```http
+PUT /api/productos/24/imagenes/11/principal
+Authorization: Bearer <JWT de admin>
+```
+
+```json
+{
+  "idImagenProducto": 11,
+  "url": "https://<url-de-cloudinary>",
+  "textoAlternativo": null,
+  "orden": 1,
+  "principal": true
+}
+```
+
+Si el producto no existe responde `404 PRODUCTO_NO_ENCONTRADO`; si la imagen no
+existe o no pertenece a ese producto, responde `404 IMAGEN_NO_ENCONTRADA`. El
+listado y detalle de productos reflejan después la selección en `principal` y
+`imagenPrincipal`.
+
 ## Admin: usuarios, datos maestros y pedidos
 
 Todas las rutas de esta sección requieren JWT con rol `admin`. El listado de
@@ -531,12 +557,35 @@ Respuesta `201 Created`, por ejemplo:
 Otros cuerpos:
 
 ```json
-// POST /api/categorias
+// CategoriaDTORequest: POST /api/categorias y PUT /api/categorias/{id}
 {
   "nombre": "<categoría>",
   "idCategoriaPadre": null
 }
 ```
+
+`CategoriaDTORequest.nombre` es obligatorio, no puede estar en blanco y admite
+hasta 100 caracteres. `idCategoriaPadre` es opcional: se envía `null` para una
+categoría raíz o el ID de una categoría existente para crear una subcategoría.
+La imagen no forma parte de este JSON; se carga mediante el endpoint multipart
+descrito abajo.
+
+Las respuestas de categoría usan `CategoriaDTO`. Ejemplo de `201 Created` al
+crear una categoría y de los objetos devueltos por los endpoints GET:
+
+```json
+{
+  "idCategoria": 12,
+  "nombre": "<categoría>",
+  "slug": "<categoria>",
+  "idCategoriaPadre": null,
+  "imagenUrl": null
+}
+```
+
+`idCategoria`, `slug` e `imagenUrl` son generados o gestionados por el backend;
+el cliente envía solo los campos de `CategoriaDTORequest`. `imagenUrl` será
+`null` si aún no se ha cargado una imagen.
 
 ```json
 // POST /api/regiones
@@ -564,6 +613,11 @@ Otros cuerpos:
 Las consultas de categorías (`GET /api/categorias`, `/raiz`,
 `/padre/{idPadre}` y `/{id}`) requieren token actualmente. Sus escrituras son
 exclusivas de admin.
+
+Para subir o reemplazar la imagen de portada, admin envía `multipart/form-data`
+con el campo `file` a `POST /api/categorias/{id}/imagen`. Se aceptan JPEG, PNG y
+WebP hasta 5 MB. La respuesta de categoría incluye `imagenUrl`; se elimina la
+imagen con `DELETE /api/categorias/{id}/imagen`.
 
 ### Consultar y actualizar pedidos
 

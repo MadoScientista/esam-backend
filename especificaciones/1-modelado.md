@@ -115,6 +115,8 @@ Region 1─N Comuna 1─N Direccion N─1 Usuario N─1 RolUsuario
 | nombre | String | No nulo |
 | slug | String | Único, no nulo |
 | activo | Boolean | Por defecto `true` |
+| imagenUrl | String | Opcional; URL segura de la imagen de portada en Cloudinary, longitud máxima 500 |
+| imagenIdPublico | String | Opcional, único; identificador de Cloudinary para reemplazar o eliminar la imagen |
 | padre | Categoria | `@ManyToOne` opcional (autorreferencia, `padre_id`) |
 | productos | Set\<Producto\> | `@ManyToMany(mappedBy = "categorias")`, lado inverso |
 

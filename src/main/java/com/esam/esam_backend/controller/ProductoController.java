@@ -139,6 +139,15 @@ public class ProductoController {
         return ResponseEntity.ok(ipMapper.toDTOList(imagenes));
     }
 
+    // Marcar como principal una imagen existente del producto (solo admin)
+    @PutMapping("/{sku}/imagenes/{idImagenProducto}/principal")
+    public ResponseEntity<ImagenProductoResponse> marcarImagenPrincipal(
+            @PathVariable Long sku,
+            @PathVariable Long idImagenProducto) {
+        ImagenProducto imagen = imagenProductoService.marcarPrincipal(sku, idImagenProducto);
+        return ResponseEntity.ok(ipMapper.toDTO(imagen));
+    }
+
     // Borrar una imagen de un producto
     @DeleteMapping("/{sku}/imagenes/{idImagenProducto}")
     public ResponseEntity<Void> borrarImagen(

@@ -107,6 +107,7 @@ lecturas de productos e imágenes siguen siendo públicas.
 | `DELETE` | `/api/productos/{sku}` | Vendedor o admin; elimina producto. |
 | `DELETE` | `/api/productos/{sku}/cascada` | Vendedor o admin; elimina producto e imágenes. |
 | `POST` | `/api/productos/{sku}/imagenes` | Vendedor o admin; sube imagen. |
+| `PUT` | `/api/productos/{sku}/imagenes/{idImagenProducto}/principal` | **Solo admin**; selecciona la imagen principal y desmarca las demás del producto. |
 | `DELETE` | `/api/productos/{sku}/imagenes/{idImagenProducto}` | Vendedor o admin; elimina imagen. |
 | `DELETE` | `/api/productos/{sku}/imagenes` | Vendedor o admin; elimina todas las imágenes del producto. |
 
@@ -120,9 +121,12 @@ lecturas de productos e imágenes siguen siendo públicas.
 | `POST` | `/api/usuarios/admin` | Crear usuario asignándole un rol. |
 | `PUT` | `/api/usuarios/{id}` | Editar usuario, incluido el rol. |
 | `DELETE` | `/api/usuarios/{id}` | Eliminar usuario. |
+| `PUT` | `/api/productos/{sku}/imagenes/{idImagenProducto}/principal` | Seleccionar la imagen principal del producto; reemplaza la selección anterior. |
 | `POST` | `/api/categorias` | Crear categoría. |
 | `PUT` | `/api/categorias/{id}` | Editar categoría. |
-| `DELETE` | `/api/categorias/{id}` | Eliminar categoría. |
+| `DELETE` | `/api/categorias/{id}` | Eliminar categoría y su imagen de Cloudinary, si tiene. |
+| `POST` | `/api/categorias/{id}/imagen` | Subir o reemplazar la imagen de portada (multipart, campo `file`). |
+| `DELETE` | `/api/categorias/{id}/imagen` | Eliminar la imagen de portada de Cloudinary y de la categoría. |
 | `POST` | `/api/marcas` | Crear marca. |
 | `PUT` | `/api/marcas/{id}` | Editar marca. |
 | `DELETE` | `/api/marcas/{id}` | Eliminar marca. |

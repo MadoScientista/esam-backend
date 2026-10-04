@@ -273,8 +273,9 @@ Parámetros de consulta (query params) para endpoints de listado.
 | nombre | String |
 | slug | String |
 | idCategoriaPadre | Long (nullable) |
+| imagenUrl | String (nullable) |
 
-**Por qué:** la jerarquía se devuelve plana, con el id del padre. El frontend arma el árbol y la respuesta evita anidamiento recursivo.
+**Por qué:** la jerarquía se devuelve plana, con el id del padre. El frontend arma el árbol y la respuesta evita anidamiento recursivo. `imagenUrl` permite representar visualmente la categoría y es `null` hasta que se cargue una imagen.
 
 ### ImagenProductoDTOResponse
 

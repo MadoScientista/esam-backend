@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.esam.esam_backend.exception.ImagenInvalidaException;
+import com.esam.esam_backend.exception.ImagenNoEncontradaException;
 import com.esam.esam_backend.exception.ProductoNoEncontradoException;
 import com.esam.esam_backend.mapper.ImagenProductoMapper;
 import com.esam.esam_backend.model.ImagenProducto;
@@ -78,6 +79,26 @@ public class ImagenProductoService {
         }
 
         return ipRepo.findByProductoSkuOrderByOrdenAsc(sku);
+    }
+
+    // Seleccionar la imagen principal de un producto. El bloqueo del producto
+    // serializa cambios concurrentes para mantener una sola imagen principal.
+    @Transactional
+    public ImagenProducto marcarPrincipal(Long sku, Long idImagenProducto) {
+        Producto producto = pRepo.buscarPorIdParaPedido(sku)
+                .orElseThrow(() -> new ProductoNoEncontradoException("No existe el producto " + sku));
+
+        List<ImagenProducto> imagenes = producto.getImagenes();
+        ImagenProducto seleccionada = imagenes.stream()
+                .filter(imagen -> idImagenProducto.equals(imagen.getIdImagenProducto()))
+                .findFirst()
+                .orElseThrow(() -> new ImagenNoEncontradaException(
+                        "La imagen " + idImagenProducto + " no pertenece al producto " + sku));
+
+        imagenes.forEach(imagen -> imagen.setPrincipal(imagen == seleccionada));
+        ipRepo.saveAll(imagenes);
+
+        return seleccionada;
     }
 
     // Borrar una imagen, en Cloudinary y en la base de datos

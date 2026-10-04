@@ -35,6 +35,12 @@ public class Categoria{
     @Column(nullable = false)
     private Boolean activo = true;
 
+    @Column(length = 500)
+    private String imagenUrl;
+
+    @Column(unique = true)
+    private String imagenIdPublico;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "padre_id")
     private Categoria padre;

@@ -18,6 +18,7 @@ public class CategoriaMapper {
         dto.setNombre(categoria.getNombre());
         dto.setSlug(categoria.getSlug());
         dto.setIdCategoriaPadre(categoria.getPadre() != null ? categoria.getPadre().getIdCategoria() : null);
+        dto.setImagenUrl(categoria.getImagenUrl());
         return dto;
     }
 

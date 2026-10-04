@@ -318,29 +318,32 @@ Una marca con productos asociados no se puede eliminar: devuelve `409`
 |--------|--------------------------------------------------------------|--------------------------------------|
 | POST   | `/api/productos/{sku}/imagenes`                              | Subir una imagen a un producto       |
 | GET    | `/api/productos/{sku}/imagenes`                              | Listar imágenes, la principal primero |
-| PUT    | `/api/productos/{sku}/imagenes/{idImagenProducto}/principal` | Marcar una imagen como principal     |
+| PUT    | `/api/productos/{sku}/imagenes/{idImagenProducto}/principal` | Marcar imagen principal (**solo admin**) |
 | DELETE | `/api/productos/{sku}/imagenes/{idImagenProducto}`           | Eliminar una imagen                  |
 
-`POST` es `multipart/form-data` y acepta dos campos:
+`POST` es `multipart/form-data` y acepta este campo:
 
 | Campo        | Tipo    | Obligatorio | Descripción                                  |
 |--------------|---------|-------------|----------------------------------------------|
 | `file`       | archivo | sí          | La imagen a subir                            |
-| `principal`  | boolean | no          | Si viene en `true`, queda como imagen principal |
 
 ```bash
 curl -X POST http://localhost:8080/api/productos/1/imagenes \
-  -F "file=@cuaderno.jpg" \
-  -F "principal=true"
+  -F "file=@cuaderno.jpg"
 ```
+
+Para elegir una imagen existente como principal, solo admin puede llamar el
+endpoint `PUT` de la tabla. No requiere cuerpo; el backend desmarca la anterior
+y devuelve la imagen seleccionada con `principal: true`.
 
 Reglas de la subida:
 
 - Formatos aceptados: `jpg`, `jpeg`, `png` y `webp`. Cualquier otro devuelve
   `400` `IMAGEN_INVALIDA`.
 - Tamaño máximo: **5 MB**. Si se excede, devuelve `400` `ARCHIVO_MUY_GRANDE`.
-- Cada producto puede tener varias imágenes, pero **solo una principal**. Al marcar
-  una como principal, la anterior se desmarca automáticamente.
+- Cada producto puede tener varias imágenes y el backend mantiene como máximo
+  una principal. Al seleccionar otra mediante el endpoint `PUT`, la anterior
+  se desmarca automáticamente.
 - Las imágenes se guardan en Cloudinary dentro de la carpeta `productos/{sku}`.
 - El campo `idImagenProducto` de la respuesta es el que se usa para las rutas de
   principal y de borrado. El identificador interno de Cloudinary no se expone.

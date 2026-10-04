@@ -93,6 +93,10 @@ public class SecurityConfig {
                 HttpMethod.POST,
                 "/api/productos", "/api/productos/**")
             .hasAnyRole("admin", "vendedor")
+            // Solo admin puede cambiar cuál imagen se expone como principal.
+            .requestMatchers(HttpMethod.PUT,
+                "/api/productos/*/imagenes/*/principal")
+            .hasRole("admin")
             .requestMatchers(HttpMethod.PUT,
                 "/api/productos/**")
             .hasAnyRole("admin", "vendedor")

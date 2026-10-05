@@ -21,7 +21,7 @@ class CarritoMapperTests {
 
     private final ImagenProductoMapper imagenProductoMapper = new ImagenProductoMapper();
     private final ProductoMapper productoMapper = new ProductoMapper(
-            imagenProductoMapper, new MarcaMapper());
+            imagenProductoMapper, new MarcaMapper(), new CategoriaMapper());
     private final CarritoMapper mapper = new CarritoMapper(
             new ItemCarritoMapper(productoMapper));
 

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.esam.esam_backend.dto.categoria.CategoriaDTO;
 import com.esam.esam_backend.dto.producto.ProductoDTORequest;
 import com.esam.esam_backend.dto.producto.ProductoDTOResponse;
 import com.esam.esam_backend.dto.producto.ProductoResumenDTOResponse;
@@ -18,10 +19,13 @@ public class ProductoMapper {
 
     private final ImagenProductoMapper imagenProductoMapper;
     private final MarcaMapper marcaMapper;
+    private final CategoriaMapper categoriaMapper;
 
-    public ProductoMapper(ImagenProductoMapper imagenProductoMapper, MarcaMapper marcaMapper) {
+    public ProductoMapper(ImagenProductoMapper imagenProductoMapper, MarcaMapper marcaMapper,
+            CategoriaMapper categoriaMapper) {
         this.imagenProductoMapper = imagenProductoMapper;
         this.marcaMapper = marcaMapper;
+        this.categoriaMapper = categoriaMapper;
     }
 
     public ProductoDTOResponse toDTO(Producto producto) {
@@ -34,6 +38,9 @@ public class ProductoMapper {
         dto.setPrecio(producto.getPrecio());
         dto.setStock(producto.getStock());
         dto.setMarcaDetalle(marcaMapper.toDTO(producto.getMarca()));
+        dto.setCategorias(producto.getCategorias().stream()
+            .map(categoriaMapper::toDTO)
+            .toList());
         dto.setImagenes(imagenProductoMapper.toDTOList(producto.getImagenes()));
         return dto;
     }

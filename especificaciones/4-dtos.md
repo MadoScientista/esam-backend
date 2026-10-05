@@ -61,6 +61,15 @@ Ejemplo de respuesta de `GET /api/productos/24`:
     "nombre": "Staedtler"
   },
   "idMarca": 2,
+  "categorias": [
+    {
+      "idCategoria": 4,
+      "nombre": "Cuadernos",
+      "slug": "cuadernos",
+      "idCategoriaPadre": null,
+      "imagenUrl": null
+    }
+  ],
   "imagenes": [
     {
       "idImagenProducto": 81,
@@ -432,8 +441,8 @@ Content-Type: application/json
 ```
 
 Respuesta `201 Created`: producto con campos como `idProducto`, `sku`, `nombre`,
-`descripcion`, `precio`, `stock`, `marca`, `marcaDetalle`, `idMarca` e
-`imagenes`.
+`descripcion`, `precio`, `stock`, `marca`, `marcaDetalle`, `idMarca`,
+`categorias` e `imagenes`.
 
 Cambiar el stock:
 

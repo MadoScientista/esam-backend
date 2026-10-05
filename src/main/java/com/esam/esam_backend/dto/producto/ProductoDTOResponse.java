@@ -2,6 +2,7 @@ package com.esam.esam_backend.dto.producto;
 
 import java.util.List;
 
+import com.esam.esam_backend.dto.categoria.CategoriaDTO;
 import com.esam.esam_backend.dto.imagenProducto.ImagenProductoResponse;
 import com.esam.esam_backend.dto.marca.MarcaDTO;
 
@@ -42,6 +43,8 @@ public class ProductoDTOResponse {
     private String marca;
 
     private MarcaDTO marcaDetalle;
+
+    private List<CategoriaDTO> categorias;
 
     private List<ImagenProductoResponse> imagenes;
 

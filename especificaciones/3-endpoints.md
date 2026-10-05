@@ -42,6 +42,12 @@ definición del endpoint: tener acceso de lectura no implica permiso de escritur
 | `GET` | `/api/roles` | Listar roles. |
 | `GET` | `/api/roles/{id}` | Obtener rol por ID. |
 
+## Endpoint para admin y vendedor
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `GET` | `/api/dashboard/resumen` | Obtener métricas agregadas del dashboard. |
+
 ## Matriz de acceso por rol del sistema
 
 | Grupo de endpoints | Público | Cliente | Vendedor | Admin |
@@ -55,6 +61,7 @@ definición del endpoint: tener acceso de lectura no implica permiso de escritur
 | Direcciones propias (`/api/direcciones...`) | — | Sí | Sí | Sí |
 | Carrito propio (`/api/carrito...`) | — | Sí | Sí | Sí |
 | Crear pedidos e historial/detalle propio (`/api/pedidos`) | — | Sí | Sí | Sí |
+| Resumen del dashboard (`/api/dashboard/resumen`) | — | — | Sí | Sí |
 | Administración de usuarios (`/api/usuarios` salvo registro, login y perfil) | — | — | — | Sí |
 | Administración de pedidos (`/api/pedidos/admin...`) | — | — | — | Sí |
 

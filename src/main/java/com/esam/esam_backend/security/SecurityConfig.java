@@ -134,6 +134,10 @@ public class SecurityConfig {
                 "/api/roles/**")
             .hasRole("admin")
 
+            // El resumen del dashboard está disponible para admin y vendedor.
+            .requestMatchers(HttpMethod.GET, "/api/dashboard/**")
+            .hasAnyRole("admin", "vendedor")
+
             // Gestión de usuarios: solo admin.
             .requestMatchers(HttpMethod.POST, "/api/usuarios/admin")
             .hasRole("admin")

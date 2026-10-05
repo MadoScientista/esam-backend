@@ -51,6 +51,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>{
     // Cantidad de productos asociados a una marca
     long countByMarcaIdMarca(Long idMarca);
 
+    long countByStockGreaterThan(Integer stock);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Producto p where p.idProducto = :idProducto")
     Optional<Producto> buscarPorIdParaPedido(@Param("idProducto") Long idProducto);

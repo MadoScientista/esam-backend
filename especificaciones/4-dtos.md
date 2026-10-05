@@ -649,6 +649,34 @@ Los estados válidos son `PENDIENTE`, `CONFIRMADO`, `ENVIADO`, `ENTREGADO` y
 `CANCELADO`. El servicio también valida que la transición solicitada sea
 permitida.
 
+### Resumen del dashboard
+
+Admin y vendedor pueden consultar `GET /api/dashboard/resumen` con un JWT:
+
+```http
+GET /api/dashboard/resumen
+Authorization: ****** de admin o vendedor>
+```
+
+Respuesta `200 OK`:
+
+```json
+{
+  "pedidosEntregados": 18,
+  "pedidosPendientes": 4,
+  "productosTotales": 45,
+  "productosConStock": 38,
+  "clientes": 210,
+  "vendedores": 8,
+  "administradores": 2
+}
+```
+
+Los conteos incluyen todos los pedidos con estado `ENTREGADO` o `PENDIENTE`,
+respectivamente; todos los productos, de los cuales `productosConStock` cuenta
+los que tienen stock mayor que cero; y los usuarios agrupados por rol
+(`cliente`, `vendedor` y `admin`).
+
 ## Errores y permisos
 
 La respuesta de error usa `ApiErrorResponse`. Ejemplo:

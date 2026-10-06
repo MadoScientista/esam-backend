@@ -11,8 +11,9 @@ definición del endpoint: tener acceso de lectura no implica permiso de escritur
 - **Propio:** el recurso debe pertenecer al usuario autenticado. En direcciones
   y pedidos, cambiar el ID de la ruta no permite consultar recursos ajenos.
 - `—`: el rol no tiene acceso a ese endpoint.
-- Las rutas `admin` requieren el rol `admin`. El rol `vendedor` no recibe
-  permisos administrativos por defecto.
+- Las rutas `admin` requieren el rol `admin`, salvo las de pedidos
+  (`/api/pedidos/admin...`), que también las usa el rol `vendedor`. El rol
+  `vendedor` no recibe permisos administrativos por defecto.
 
 ## Endpoints públicos
 
@@ -42,11 +43,14 @@ definición del endpoint: tener acceso de lectura no implica permiso de escritur
 | `GET` | `/api/roles` | Listar roles. |
 | `GET` | `/api/roles/{id}` | Obtener rol por ID. |
 
-## Endpoint para admin y vendedor
+## Endpoints para admin y vendedor
 
 | Método | Endpoint | Descripción |
 |---|---|---|
 | `GET` | `/api/dashboard/resumen` | Obtener métricas agregadas del dashboard. |
+| `GET` | `/api/pedidos/admin` | Listar todos los pedidos. |
+| `GET` | `/api/pedidos/admin/{idPedido}` | Obtener un pedido por ID. |
+| `PUT` | `/api/pedidos/admin/{idPedido}/estado` | Cambiar el estado de un pedido. |
 
 ## Matriz de acceso por rol del sistema
 
@@ -63,7 +67,7 @@ definición del endpoint: tener acceso de lectura no implica permiso de escritur
 | Crear pedidos e historial/detalle propio (`/api/pedidos`) | — | Sí | Sí | Sí |
 | Resumen del dashboard (`/api/dashboard/resumen`) | — | — | Sí | Sí |
 | Administración de usuarios (`/api/usuarios` salvo registro, login y perfil) | — | — | — | Sí |
-| Administración de pedidos (`/api/pedidos/admin...`) | — | — | — | Sí |
+| Administración de pedidos (`/api/pedidos/admin...`) | — | — | Sí | Sí |
 
 El encabezado para los endpoints protegidos es:
 
@@ -145,9 +149,6 @@ lecturas de productos e imágenes siguen siendo públicas.
 | `POST` | `/api/roles` | Crear rol. |
 | `PUT` | `/api/roles/{id}` | Editar rol. |
 | `DELETE` | `/api/roles/{id}` | Eliminar rol. |
-| `GET` | `/api/pedidos/admin` | Listar pedidos para administración. |
-| `GET` | `/api/pedidos/admin/{idPedido}` | Obtener pedido para administración. |
-| `PUT` | `/api/pedidos/admin/{idPedido}/estado` | Cambiar estado del pedido. |
 
 ## Respuestas de acceso
 

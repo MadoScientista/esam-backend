@@ -12,7 +12,7 @@
 | Auditoría | No hay auditoría general; Pedido registra fecha de creación y cada cambio de estado |
 | Concurrencia | `Producto` usa `@Version` (`Long`, no nulo, por defecto `0`) para bloqueo optimista. Ninguna otra entidad lo usa |
 | Dinero | `Long` en pesos chilenos (CLP no tiene decimales) |
-| Stock Producto | `Integer` (precio unitario es `Long`, pero stock es `Integer`) |
+| Stock Producto | `Integer` (precio unitario es `Long`, pero stock es `Integer`). El stock es **total**; la parte comprometida por pedidos creados y aún no entregados ni cancelados se lleva en `stockReservado` aparte |
 | Fetch | Todas las relaciones `LAZY` |
 | Colecciones `@ManyToMany` | `Set<>` |
 | Enums | `@Enumerated(EnumType.STRING)` |
@@ -133,7 +133,8 @@ Region 1─N Comuna 1─N Direccion N─1 Usuario N─1 RolUsuario
 | nombre | String | No nulo |
 | descripcion | String (`TEXT`) | Opcional |
 | precio | Long | No nulo |
-| stock | Integer | No nulo |
+| stock | Integer | No nulo (stock **total** del producto) |
+| stockReservado | Integer | No nulo, por defecto `0`. Parte del stock comprometida por pedidos creados y aún no entregados ni cancelados |
 | activo | Boolean | Por defecto `true` |
 | version | Long | `@Version`, no nulo, por defecto `0` (bloqueo optimista) |
 | marca | Marca | `@ManyToOne`, no nulo (`id_marca`) |
@@ -281,21 +282,22 @@ PK compuesta (`id_producto`, `id_categoria`).
 | idPedido | Long | PK |
 | numeroPedido | String | Único, no nulo |
 | estado | EstadoPedido | `@Enumerated(STRING)`, no nulo, longitud 20 |
+| tipoEntrega | TipoEntrega | `@Enumerated(STRING)`, no nulo, longitud 20 (`RETIRA_TIENDA` / `DESPACHO`) |
 | total | Long | No nulo |
 | creadoEn | Instant | No nulo, asignado al crear el pedido |
-| nombreReceptor | String | No nulo (copia de datos de envío) |
-| telefonoReceptor | String | No nulo (copia) |
-| calle | String | No nulo (copia) |
-| numero | String | No nulo (copia) |
+| nombreReceptor | String | Solo para `DESPACHO` (copia de datos de envío) |
+| telefonoReceptor | String | Solo para `DESPACHO` (copia) |
+| calle | String | Solo para `DESPACHO` (copia) |
+| numero | String | Solo para `DESPACHO` (copia) |
 | complemento | String | Opcional (copia) |
-| comunaNombre | String | No nulo (copia como texto) |
-| regionNombre | String | No nulo (copia como texto) |
+| comunaNombre | String | Solo para `DESPACHO` (copia como texto) |
+| regionNombre | String | Solo para `DESPACHO` (copia como texto) |
 | usuario | Usuario | `@ManyToOne`, no nulo (`usuario_id`) |
 | detalles | List\<DetallePedido\> | `@OneToMany(mappedBy = "pedido")`, cascade ALL |
 | historialEstados | List\<CambioEstadoPedido\> | `@OneToMany(mappedBy = "pedido")`, cascade ALL |
 
 **Relaciones:** `N Pedido ─── 1 Usuario` · `1 Pedido ─── N DetallePedido` · `1 Pedido ─── N CambioEstadoPedido`
-**Nota de modelado:** no tiene FK a `Direccion`; los datos de envío viven como columnas propias del pedido.
+**Nota de modelado:** no tiene FK a `Direccion`; los datos de envío viven como columnas propias del pedido y solo se copian cuando `tipoEntrega = DESPACHO`. Con `RETIRA_TIENDA` no se guardan datos de dirección. Al crear el pedido se valida stock suficiente y la cantidad queda **reservada** (`stockReservado` del producto); el pago se confirma posteriormente (flujo simulado, sin pasarela) poniendo el pedido en `CONFIRMADO`, operación que realiza admin o vendedor. Al entregar el pedido se descuenta el total físico y se libera la reserva; al cancelarlo se libera la reserva sin tocar el total.
 Los pedidos se crean desde el carrito; sus productos, cantidades y precios se copian a los detalles. No se editan ni eliminan.
 
 ### CambioEstadoPedido
@@ -309,7 +311,7 @@ Los pedidos se crean desde el carrito; sus productos, cantidades y precios se co
 | pedido | Pedido | `@ManyToOne`, no nulo (`pedido_id`) |
 | usuario | Usuario | `@ManyToOne`, no nulo (`usuario_id`); actor del cambio |
 
-Las transiciones permitidas son `PENDIENTE → CONFIRMADO → ENVIADO → ENTREGADO` y `PENDIENTE → CANCELADO`. Al cancelar un pedido pendiente se repone el stock.
+Las transiciones permitidas son `PENDIENTE → CONFIRMADO → ENVIADO → ENTREGADO` y `PENDIENTE → CANCELADO`. Pasar de `PENDIENTE` a `CONFIRMADO` equivale a aceptar el pago (flujo simulado: el cliente solo lo simula en su interfaz y lo registra admin o vendedor desde el panel). Al cancelar un pedido pendiente se libera la reserva de stock; al pasar a `ENTREGADO` se descuenta el total físico y se libera la reserva.
 
 ### DetallePedido
 
@@ -335,6 +337,14 @@ Las transiciones permitidas son `PENDIENTE → CONFIRMADO → ENVIADO → ENTREG
 Valores: `PENDIENTE`, `CONFIRMADO`, `ENVIADO`, `ENTREGADO`, `CANCELADO`
 
 Persistido en `pedido.estado` con `@Enumerated(EnumType.STRING)`.
+
+### TipoEntrega
+
+Valores: `RETIRA_TIENDA`, `DESPACHO`
+
+Persistido en `pedido.tipo_entrega` con `@Enumerated(EnumType.STRING)`. Indica si el
+pedido se retira en tienda o se despacha a domicilio; solo el despacho requiere
+datos de envío.
 
 ### RolSistema
 

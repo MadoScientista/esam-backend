@@ -55,6 +55,7 @@ Ejemplo de respuesta de `GET /api/productos/24`:
   "descripcion": "Cuaderno de 100 hojas",
   "precio": 2990,
   "stock": 35,
+  "stockReservado": 3,
   "marca": "Staedtler",
   "marcaDetalle": {
     "idMarca": 2,
@@ -84,6 +85,12 @@ Ejemplo de respuesta de `GET /api/productos/24`:
 Las imágenes son públicas; para conocer una URL se usa el listado
 `GET /api/productos/{idProducto}/imagenes`. El formato para subir imágenes está en la
 sección de vendedor.
+
+El campo `stock` es la cantidad total del producto; `stockReservado` es la parte
+comprometida por pedidos creados y aún no entregados ni cancelados. El stock
+*disponible* para nuevos
+pedidos es la resta `stock - stockReservado` y lo calcula el frontend a partir
+de ambos campos.
 
 La respuesta de `GET /api/regiones` es una lista de objetos con
 `idRegion` y `nombre`. `GET /api/comunas` devuelve `idComuna`, `nombre` e
@@ -321,7 +328,9 @@ Cambiar cantidad con `PUT /api/carrito/items/{idProducto}`:
 Quitar un producto: `DELETE /api/carrito/items/{idProducto}`. Vaciar el carrito:
 `DELETE /api/carrito`.
 
-Las operaciones que devuelven el carrito responden, por ejemplo:
+Las operaciones que devuelven el carrito responden, por ejemplo. Cada
+`producto` tiene la forma de un resumen de producto, con `stock` (total),
+`stockReservado`, `imagenPrincipal` y `marca` además de los campos mostrados:
 
 ```json
 {
@@ -333,7 +342,8 @@ Las operaciones que devuelven el carrito responden, por ejemplo:
         "idProducto": 24,
         "nombre": "Cuaderno universitario",
         "precio": 2990,
-        "stock": 35
+        "stock": 35,
+        "stockReservado": 3
       },
       "cantidad": 2,
       "precioUnitario": 2990,
@@ -348,9 +358,30 @@ Las operaciones que devuelven el carrito responden, por ejemplo:
 Los precios y subtotales de carrito son calculados por el servidor. No enviar
 un precio desde el frontend.
 
+El carrito **no** valida stock, ni al agregar ni al cambiar cantidades: el
+stock se exige recién al crear el pedido. El disponible para comprar es la
+resta `stock - stockReservado`.
+
 ### Crear pedido e historial propio
 
-El pedido se crea a partir del carrito; el cliente solo envía una dirección:
+El pedido se crea siempre a partir del carrito persistido en el backend: el
+cuerpo de la solicitud no lleva ítems ni totales, solo la modalidad de entrega.
+
+Campos del cuerpo (`PedidoDTORequest`):
+
+| Campo | Obligatorio | Detalle |
+|---|---|---|
+| `tipoEntrega` | Sí | `DESPACHO` o `RETIRA_TIENDA`. Si falta o el valor no es válido, responde `400` (code `ERROR_VALIDACION`). |
+| `idDireccion` | Solo en `DESPACHO` | ID de una dirección **propia y activa**. Con `RETIRA_TIENDA` no se envía; si se envía igual, el servidor la ignora. |
+
+Errores posibles al crear:
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| `400` | `ERROR_VALIDACION` | Falta `tipoEntrega` o el valor no es un `TipoEntrega` válido. |
+| `400` | `PEDIDO_INVALIDO` | `DESPACHO` sin `idDireccion`; el usuario no tiene carrito; el carrito está vacío; o un producto del carrito ya no está activo. |
+| `404` | `DIRECCION_NO_ENCONTRADA` | `idDireccion` inexistente, inactiva o que no pertenece al usuario del token. |
+| `409` | `CONFLICTO_STOCK` | No alcanza el stock disponible de uno de los productos. |
 
 ```http
 POST /api/pedidos
@@ -358,19 +389,33 @@ Authorization: Bearer <JWT>
 Content-Type: application/json
 ```
 
+Despacho a domicilio:
+
 ```json
 {
+  "tipoEntrega": "DESPACHO",
   "idDireccion": 42
 }
 ```
 
-Respuesta `201 Created`, con forma `PedidoDTOResponse`:
+Retiro en tienda:
+
+```json
+{
+  "tipoEntrega": "RETIRA_TIENDA"
+}
+```
+
+Respuesta `201 Created`, con forma `PedidoDTOResponse`. El campo `tipoEntrega`
+repite la modalidad elegida; `envio` solo se completa para `DESPACHO` y en
+cualquier otro caso es `null`. Para el despacho es:
 
 ```json
 {
   "idPedido": 101,
   "numeroPedido": "<número generado>",
   "estado": "PENDIENTE",
+  "tipoEntrega": "DESPACHO",
   "total": 5980,
   "creadoEn": "<fecha y hora ISO-8601>",
   "envio": {
@@ -403,15 +448,95 @@ Respuesta `201 Created`, con forma `PedidoDTOResponse`:
 }
 ```
 
-El historial del cliente se consulta con `GET /api/pedidos` y devuelve una lista
-de resúmenes (`idPedido`, `numeroPedido`, `estado`, `total`, `cantidadItems`,
-`creadoEn`). El detalle propio se obtiene con `GET /api/pedidos/{idPedido}`.
+Para el retiro en tienda la respuesta es la misma forma con `envio: null` y
+sin datos de envío:
+
+```json
+{
+  "idPedido": 102,
+  "numeroPedido": "<número generado>",
+  "estado": "PENDIENTE",
+  "tipoEntrega": "RETIRA_TIENDA",
+  "total": 5980,
+  "creadoEn": "<fecha y hora ISO-8601>",
+  "detalles": [
+    {
+      "idDetallePedido": 202,
+      "idProducto": 24,
+      "nombreProducto": "Cuaderno universitario",
+      "skuProducto": "CUAD-001",
+      "precioUnitario": 2990,
+      "cantidad": 2,
+      "subtotal": 5980
+    }
+  ],
+  "historialEstados": [
+    {
+      "estadoAnterior": null,
+      "estadoNuevo": "PENDIENTE",
+      "cambiadoEn": "<fecha y hora ISO-8601>"
+    }
+  ]
+}
+```
+
+Al crear el pedido el servidor valida que haya stock disponible
+(`stock - stockReservado`) para todos los productos del carrito. Si falta
+stock responde `409` (code `CONFLICTO_STOCK`), el pedido **no** se crea y el
+carrito queda intacto: la operación es una transacción y se revierte por
+completo. El mensaje identifica el producto, por ejemplo
+`"Stock insuficiente para el producto 24"`; el frontend debe basarse en
+`status` y `code`, no en el texto.
+
+Cuando el pedido sí se crea, la cantidad de cada producto queda **reservada**
+(aumenta su `stockReservado`) y el carrito del usuario queda vacío. El
+`PedidoDTOResponse` devuelto queda en estado `PENDIENTE`.
+
+Ciclo de stock por estado del pedido:
+
+| Transición | Efecto sobre el stock |
+|---|---|
+| Creación → `PENDIENTE` | `stockReservado += cantidad`; el total físico no cambia. |
+| `PENDIENTE` → `CONFIRMADO` | Sin cambio: la reserva se mantiene mientras el pago está aceptado. |
+| `CONFIRMADO` → `ENVIADO` | Sin cambio. |
+| `ENVIADO` → `ENTREGADO` | `stock -= cantidad` y `stockReservado -= cantidad`: se descuenta lo vendido y se libera la reserva. El disponible (`stock - stockReservado`) queda igual que antes de entregar. |
+| `PENDIENTE` → `CANCELADO` | `stockReservado -= cantidad`: se libera la reserva sin tocar el total. |
+
+Consulta del historial y del detalle propio:
+
+```http
+GET /api/pedidos
+GET /api/pedidos/{idPedido}
+Authorization: Bearer <JWT>
+```
+
+`GET /api/pedidos` devuelve una lista de resúmenes (`PedidoResumenDTOResponse`)
+ordenada por `creadoEn` descendente, sin paginación:
+
+```json
+[
+  {
+    "idPedido": 101,
+    "numeroPedido": "<número generado>",
+    "estado": "PENDIENTE",
+    "total": 5980,
+    "cantidadItems": 2,
+    "creadoEn": "<fecha y hora ISO-8601>"
+  }
+]
+```
+
+`GET /api/pedidos/{idPedido}` devuelve el `PedidoDTOResponse` completo (el
+mismo formato del `201 Created` de arriba), también sin paginación. Si el
+pedido no existe o pertenece a otro usuario responde `404` (code
+`PEDIDO_NO_ENCONTRADO`); no se distingue entre ambos casos.
 
 ## Vendedor: catálogo e imágenes
 
 El vendedor puede leer el catálogo público y, con JWT, crear, editar, eliminar
 productos y mantener sus imágenes. No puede modificar categorías, marcas,
-geografía, roles, usuarios ni pedidos de administración.
+geografía, roles ni usuarios; los pedidos de administración (`/api/pedidos/admin...`)
+sí puede consultarlos y actualizar su estado, igual que admin.
 
 ### Crear o editar producto
 
@@ -452,7 +577,25 @@ Authorization: Bearer <JWT de vendedor>
 ```
 
 También existen las rutas `/stock/aumentar?unidades=2` y
-`/stock/disminuir?unidades=2`.
+`/stock/disminuir?unidades=2`. Las tres rutas devuelven el
+`ProductoDTOResponse` actualizado.
+
+El `stock` que se envía al crear o editar un producto, y el que fija
+`stock/setear`, es siempre el **total físico**, no el disponible. El vendedor
+**no** envía `stockReservado`: el servidor lo inicializa en `0` y lo administra
+internamente cuando se crean y se entregan o cancelan pedidos.
+
+Comportamiento de cada operación:
+
+| Operación | Valida | Errores |
+|---|---|---|
+| Crear / editar producto | `stock >= 0` | `400 PRODUCTO_INVALIDO` si `stock` es negativo o nulo. |
+| Editar producto | `stock >= stockReservado` | `409 CONFLICTO_STOCK` si el total quedaría por debajo del reservado. |
+| `stock/setear?stock=N` | `N >= 0` y `N >= stockReservado` | `400 PRODUCTO_INVALIDO` si `N < 0`; `409 CONFLICTO_STOCK` si `N` deja el total por debajo del reservado. |
+| `stock/disminuir?unidades=U` | `U > 0`, `U <= stock` y `stock - U >= stockReservado` | `400 PRODUCTO_INVALIDO` si `U <= 0`; `409 CONFLICTO_STOCK` si `U` supera el total (`"No hay stock suficiente. Stock actual: ..."`) o si dejaría el total por debajo del reservado. |
+| `stock/aumentar?unidades=U` | `U > 0` y no desbordar el total | `400 PRODUCTO_INVALIDO` si `U <= 0`; `409 CONFLICTO_STOCK` si el aumento excede el máximo permitido. No considera el reservado porque solo incrementa. |
+
+En todas, un producto inexistente responde `404 PRODUCTO_NO_ENCONTRADO`.
 
 ### Subir imagen
 
@@ -503,9 +646,11 @@ listado y detalle de productos reflejan después la selección en `principal` y
 
 ## Admin: usuarios, datos maestros y pedidos
 
-Todas las rutas de esta sección requieren JWT con rol `admin`. El listado de
-roles puede consultarse públicamente, pero solo admin puede mutarlos o asignar
-un rol al crear una cuenta.
+Todas las rutas de esta sección requieren JWT con rol `admin`, con una única
+excepción: las rutas de administración de pedidos (`GET` y `PUT`
+`/api/pedidos/admin...`) también las puede usar el rol `vendedor`, como se
+detalla más abajo. El listado de roles puede consultarse públicamente, pero
+solo admin puede mutarlos o asignar un rol al crear una cuenta.
 
 ### Crear usuario con rol
 
@@ -630,12 +775,73 @@ imagen con `DELETE /api/categorias/{id}/imagen`.
 
 ### Consultar y actualizar pedidos
 
-Admin puede listar todos los pedidos con `GET /api/pedidos/admin`, obtener uno
-con `GET /api/pedidos/admin/{idPedido}` y cambiar su estado:
+Las rutas `/api/pedidos/admin...` están disponibles para **admin y vendedor**.
+El rol `cliente` no puede usarlas: recibe `403` (code `ACCESO_DENEGADO`), y sin
+token recibe `401`.
+
+| Método | Ruta | Qué hace | Respuesta |
+|---|---|---|---|
+| `GET` | `/api/pedidos/admin` | Lista todos los pedidos, de más reciente a más antiguo, sin paginación. | `200`, lista de `PedidoAdminDTOResponse`. |
+| `GET` | `/api/pedidos/admin/{idPedido}` | Detalle de un pedido, sea de quien sea. | `200`, `PedidoAdminDTOResponse`. `404 PEDIDO_NO_ENCONTRADO` si no existe. |
+| `PUT` | `/api/pedidos/admin/{idPedido}/estado` | Cambia el estado. | `200`, el pedido actualizado. |
+
+`PedidoAdminDTOResponse` es el `PedidoDTOResponse` de la sección del cliente
+(con `tipoEntrega`, `envio`, `detalles` e `historialEstados`) más dos campos
+del comprador: `idUsuario` y `emailUsuario`. Ejemplo de lista:
+
+```json
+[
+  {
+    "idPedido": 101,
+    "numeroPedido": "<número generado>",
+    "estado": "PENDIENTE",
+    "tipoEntrega": "DESPACHO",
+    "total": 5980,
+    "creadoEn": "<fecha y hora ISO-8601>",
+    "envio": {
+      "nombreReceptor": "<nombre de quien recibe>",
+      "telefonoReceptor": "+56912345678",
+      "calle": "<calle>",
+      "numero": "123",
+      "complemento": "<opcional>",
+      "comunaNombre": "<comuna>",
+      "regionNombre": "<región>"
+    },
+    "detalles": [
+      {
+        "idDetallePedido": 201,
+        "idProducto": 24,
+        "nombreProducto": "Cuaderno universitario",
+        "skuProducto": "CUAD-001",
+        "precioUnitario": 2990,
+        "cantidad": 2,
+        "subtotal": 5980
+      }
+    ],
+    "historialEstados": [
+      {
+        "estadoAnterior": null,
+        "estadoNuevo": "PENDIENTE",
+        "cambiadoEn": "<fecha y hora ISO-8601>"
+      }
+    ],
+    "idUsuario": 15,
+    "emailUsuario": "<correo del comprador>"
+  }
+]
+```
+
+Para un pedido de retiro en tienda, `envio` es `null`. El campo
+`emailUsuario` es correo personal: no debe registrarse en logs.
+
+`historialEstados` registra cada cambio con `estadoAnterior`, `estadoNuevo` y
+`cambiadoEn`, pero **no** incluye qué usuario hizo el cambio.
+
+Cambio de estado:
 
 ```http
 PUT /api/pedidos/admin/101/estado
-Authorization: Bearer <JWT de admin>
+Authorization: Bearer <JWT de admin o vendedor>
 Content-Type: application/json
 ```
 
@@ -645,9 +851,41 @@ Content-Type: application/json
 }
 ```
 
-Los estados válidos son `PENDIENTE`, `CONFIRMADO`, `ENVIADO`, `ENTREGADO` y
-`CANCELADO`. El servicio también valida que la transición solicitada sea
-permitida.
+Respuesta `200 OK` con el `PedidoAdminDTOResponse` actualizado, incluyendo el
+`historialEstados` con la transición recién agregada.
+
+Transiciones permitidas:
+
+| Estado actual | Transiciones permitidas |
+|---|---|
+| `PENDIENTE` | `CONFIRMADO`, `CANCELADO` |
+| `CONFIRMADO` | `ENVIADO` |
+| `ENVIADO` | `ENTREGADO` |
+| `ENTREGADO` | Ninguna (estado final) |
+| `CANCELADO` | Ninguna (estado final) |
+
+Errores de `PUT .../estado`:
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| `400` | `ERROR_VALIDACION` | Falta `estado` o el valor no es un `EstadoPedido` válido. |
+| `400` | `PEDIDO_INVALIDO` | La transición solicitada no está permitida (tabla anterior). |
+| `403` | `ACCESO_DENEGADO` | El token no es de admin ni vendedor. |
+| `404` | `PEDIDO_NO_ENCONTRADO` | No existe un pedido con ese ID. |
+
+Flujo de pago (simulado): el pago **no** se procesa en el backend y no existe
+endpoint de pago ni endpoint para que un cliente confirme su propio pedido. El
+pedido nace `PENDIENTE`; el frontend del cliente puede simular la pasarela de
+pago en su interfaz, pero eso no cambia nada en el servidor. Quien registra el
+pago aceptado es un **admin o un vendedor** desde el panel, mediante
+`PUT /api/pedidos/admin/{idPedido}/estado` con `{"estado": "CONFIRMADO"}`.
+Solo admin o vendedor pueden hacerlo; el cliente no tiene acceso a esa ruta.
+
+Efecto sobre el stock de cada transición (ver detalle en la sección de
+creación de pedido): la reserva nace en `PENDIENTE`, se mantiene en
+`CONFIRMADO` y `ENVIADO`, se descuenta del total y se libera en `ENTREGADO`,
+y se libera sin tocar el total al pasar a `CANCELADO` (solo posible desde
+`PENDIENTE`).
 
 ### Resumen del dashboard
 
@@ -655,7 +893,7 @@ Admin y vendedor pueden consultar `GET /api/dashboard/resumen` con un JWT:
 
 ```http
 GET /api/dashboard/resumen
-Authorization: ****** de admin o vendedor>
+Authorization: Bearer <JWT de admin o vendedor>
 ```
 
 Respuesta `200 OK`:
@@ -673,9 +911,13 @@ Respuesta `200 OK`:
 ```
 
 Los conteos incluyen todos los pedidos con estado `ENTREGADO` o `PENDIENTE`,
-respectivamente; todos los productos, de los cuales `productosConStock` cuenta
-los que tienen stock mayor que cero; y los usuarios agrupados por rol
+respectivamente; todos los productos; y los usuarios agrupados por rol
 (`cliente`, `vendedor` y `admin`).
+
+`productosConStock` cuenta los productos con **stock físico** mayor que cero
+(`stock > 0`), no el disponible. Un producto con unidades totalmente reservadas
+sigue contando como "con stock" aunque no se pueda vender nada de él hasta que
+se entregue o cancele un pedido.
 
 ## Errores y permisos
 
@@ -721,6 +963,15 @@ concatenado para clientes que aún no consumen ese arreglo.
 - El registro y la edición de perfil reutilizan `UsuarioDTORequest`, que mezcla
   campos identificatorios de dos contratos y marca algunos campos obligatorios
   aunque no todos sean persistidos por el servicio.
+- Las respuestas de producto y de carrito exponen `stock` como total y
+  también `stockReservado`; el disponible se calcula como la resta de ambos.
+  El total solo baja al entregar un pedido; la reserva nace al crearlo.
+- La creación de pedido exige `tipoEntrega` (`DESPACHO` o `RETIRA_TIENDA`);
+  `idDireccion` solo se envía para despacho y se ignora en el retiro.
+- No existe endpoint de pago ni endpoint para que el cliente confirme su
+  pedido: `CONFIRMADO` lo aplica admin o vendedor desde el panel.
+- Ningún listado de pedidos tiene paginación: todos devuelven el conjunto
+  completo. `historialEstados` no indica qué usuario hizo el cambio.
 - El controlador de login actual no llena `tipoToken` ni `expiraEn` aunque esos
   campos existan en el DTO de respuesta.
 - Las respuestas de usuario incluyen propiedades antiguas (`id`, `nombres`,

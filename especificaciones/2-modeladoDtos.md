@@ -314,8 +314,9 @@ Para listados.
 | imagenPrincipal | ImagenProductoDTOResponse (nullable) |
 | marca | MarcaDTOResponse |
 | stock | Integer |
+| stockReservado | Integer |
 
-**Por qué:** `imagenPrincipal` es el objeto completo y no solo la URL, para que el listado también tenga el texto alternativo (accesibilidad); es `null` si el producto no tiene imágenes. Se expone la cantidad exacta de stock para que el frontend decida cómo mostrarla (disponible, "quedan N unidades", agotado).
+**Por qué:** `imagenPrincipal` es el objeto completo y no solo la URL, para que el listado también tenga el texto alternativo (accesibilidad); es `null` si el producto no tiene imágenes. `stock` es el total y `stockReservado` la parte comprometida por pedidos creados y aún no entregados ni cancelados; el frontend calcula el disponible como `stock - stockReservado` y decide cómo mostrarlo (disponible, "quedan N unidades", agotado).
 
 ### ProductoDetalleDTOResponse
 Para la ficha del producto.
@@ -328,6 +329,7 @@ Para la ficha del producto.
 | descripcion | String |
 | precio | Long |
 | stock | Integer |
+| stockReservado | Integer |
 | marca | MarcaDTOResponse |
 | categorias | List\<CategoriaDTOResponse\> |
 | imagenes | List\<ImagenProductoDTOResponse\> |
@@ -383,9 +385,10 @@ Crear un pedido desde el carrito.
 
 | Campo | Tipo | Validación |
 |---|---|---|
-| idDireccion | Long | `@NotNull` |
+| tipoEntrega | TipoEntrega | `@NotNull` (`DESPACHO` o `RETIRA_TIENDA`) |
+| idDireccion | Long | Obligatorio solo si `tipoEntrega = DESPACHO` |
 
-**Por qué:** es deliberadamente mínimo. Los ítems salen del carrito del servidor, la dirección se referencia por id y el servidor copia sus datos, y `total` y `estado` no los decide el cliente.
+**Por qué:** es deliberadamente mínimo. Los ítems salen del carrito del servidor, la modalidad de entrega la elige el cliente, la dirección (solo para despacho) se referencia por id y el servidor copia sus datos, y `total` y `estado` no los decide el cliente.
 
 ### DatosEnvioDTOResponse
 
@@ -432,14 +435,15 @@ Para listados del historial.
 | idPedido | Long |
 | numeroPedido | String |
 | estado | String |
+| tipoEntrega | TipoEntrega |
 | total | Long |
 | creadoEn | Instant |
-| envio | DatosEnvioDTOResponse |
+| envio | DatosEnvioDTOResponse (nullable) |
 | detalles | List\<DetallePedidoDTOResponse\> |
 | historialEstados | List\<CambioEstadoPedidoDTOResponse\> |
 
-`CambioEstadoPedidoDTOResponse` contiene `estadoAnterior` (nullable para el estado inicial), `estadoNuevo` y `cambiadoEn`.
-El cliente crea pedidos desde su carrito y solo puede consultar su propio historial y detalle. La administración consulta todos los pedidos y actualiza únicamente su estado, sujeto a las transiciones definidas en el modelo.
+`CambioEstadoPedidoDTOResponse` contiene `estadoAnterior` (nullable para el estado inicial), `estadoNuevo` y `cambiadoEn`. `envio` viene null cuando `tipoEntrega = RETIRA_TIENDA`.
+El cliente crea pedidos desde su carrito y solo puede consultar su propio historial y detalle, ambos sin paginación. La administración (roles `admin` y `vendedor`) consulta todos los pedidos con `PedidoAdminDTOResponse` y actualiza únicamente su estado, sujeto a las transiciones definidas en el modelo.
 
 ---
 
@@ -470,6 +474,7 @@ Crear y reemplazar un producto.
 | descripcion | String |
 | precio | Long |
 | stock | Integer |
+| stockReservado | Integer |
 | activo | Boolean |
 | marca | MarcaDTOResponse |
 | categorias | List\<CategoriaDTOResponse\> |
@@ -511,14 +516,15 @@ Crear y reemplazar un producto.
 |---|---|---|
 | estado | EstadoPedido | `@NotNull` |
 
-**Por qué:** es el único dato que un administrador cambia en un pedido. Qué transiciones son válidas lo decide el servicio, no el DTO.
+**Por qué:** es el único dato que admin o vendedor cambia en un pedido. Qué transiciones son válidas lo decide el servicio, no el DTO.
 
 ### PedidoAdminDTOResponse
-Extiende `PedidoDTOResponse`.
+Extiende `PedidoDTOResponse`. Se usa en los listados y el detalle de
+`/api/pedidos/admin...`.
 
 | Campo adicional | Tipo |
 |---|---|
 | idUsuario | Long |
 | emailUsuario | String |
 
-**Por qué:** el administrador necesita saber de quién es el pedido. El cliente no necesita verlo, porque ya es el suyo.
+**Por qué:** quien administra los pedidos necesita saber de quién es el pedido. El cliente no necesita verlo, porque ya es el suyo.

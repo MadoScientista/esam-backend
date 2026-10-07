@@ -15,6 +15,10 @@ su **stock** y las **imágenes** de cada producto.
   Ver [Autorización](#autorización).
 - Administra el catálogo de productos: crear, editar, eliminar, buscar por nombre,
   marca, precio o stock, y controlar el stock (aumentar, disminuir o fijar un valor).
+- Permite al cliente armar un **carrito** y crear **pedidos** (retiro en tienda o
+  despacho a domicilio). Al crearlos, el stock queda **reservado** hasta confirmar
+  el pago, que se hace de forma simulada por el frontend y se convalida desde el
+  panel de administración.
 - Gestiona las imágenes de cada producto, almacenadas en **Cloudinary**: subir varias
   por producto, elegir una como principal y eliminarlas. Solo un producto puede tener
   una imagen principal a la vez, y la base de datos lo garantiza con un índice único.
@@ -299,6 +303,7 @@ Una marca con productos asociados no se puede eliminar: devuelve `409`
   "marca": "Staedtler",
   "precio": 3990,
   "stock": 25,
+  "stockReservado": 0,
   "imagenes": [
     { "idImagenProducto": 1, "url": "https://.../imagen.jpg", "principal": true }
   ]
@@ -307,6 +312,11 @@ Una marca con productos asociados no se puede eliminar: devuelve `409`
 
 > El stock solo acepta números enteros positivos o cero (>= 0). Si al disminuir
 > el stock quedaría en negativo, la aplicación devuelve un error.
+> `stock` es el total del producto y `stockReservado` la parte comprometida por
+> pedidos creados y aún no entregados ni cancelados (el disponible es
+> `stock - stockReservado`). Por eso
+> `setear`, `disminuir` y la edición rechazan con `409 CONFLICTO_STOCK` cualquier
+> valor que dejaría el total por debajo de lo ya reservado.
 >
 > Un producto con imágenes no se puede eliminar: devuelve `409`
 > `PRODUCTO_CON_IMAGENES`. La variante `/cascada` también borra las imágenes
@@ -347,6 +357,72 @@ Reglas de la subida:
 - Las imágenes se guardan en Cloudinary dentro de la carpeta `productos/{sku}`.
 - El campo `idImagenProducto` de la respuesta es el que se usa para las rutas de
   principal y de borrado. El identificador interno de Cloudinary no se expone.
+
+### Pedidos - `/api/pedidos`
+
+| Método | Endpoint                                           | Descripción                                            |
+|--------|----------------------------------------------------|--------------------------------------------------------|
+| POST   | `/api/pedidos`                                     | Crear un pedido desde el carrito propio                |
+| GET    | `/api/pedidos`                                     | Historial de pedidos propios (resúmenes)               |
+| GET    | `/api/pedidos/{idPedido}`                          | Detalle de un pedido propio                            |
+| GET    | `/api/pedidos/admin`                               | Listar todos los pedidos (**admin/vendedor**)          |
+| GET    | `/api/pedidos/admin/{idPedido}`                    | Obtener un pedido por ID (**admin/vendedor**)          |
+| PUT    | `/api/pedidos/admin/{idPedido}/estado`             | Cambiar el estado de un pedido (**admin/vendedor**)    |
+
+Para crear el pedido se indica la modalidad de entrega. La dirección es
+obligatoria solo para despacho a domicilio:
+
+```json
+{
+  "tipoEntrega": "DESPACHO",
+  "idDireccion": 42
+}
+```
+
+Para retiro en tienda no se envía dirección:
+
+```json
+{
+  "tipoEntrega": "RETIRA_TIENDA"
+}
+```
+
+El pedido se crea a partir del carrito con estado `PENDIENTE` y el stock de sus
+productos queda **reservado**. Respuesta `201 Created`:
+
+```json
+{
+  "idPedido": 101,
+  "numeroPedido": "PED-...",
+  "estado": "PENDIENTE",
+  "tipoEntrega": "DESPACHO",
+  "total": 5980,
+  "creadoEn": "2026-01-01T12:00:00Z",
+  "envio": {
+    "nombreReceptor": "string",
+    "telefonoReceptor": "+56912345678",
+    "calle": "string",
+    "numero": "123",
+    "complemento": null,
+    "comunaNombre": "string",
+    "regionNombre": "string"
+  },
+  "detalles": [],
+  "historialEstados": []
+}
+```
+
+Con `RETIRA_TIENDA`, `envio` viene null y no se copia ninguna dirección. Si el
+stock no alcanza para algún producto, se responde `409 CONFLICTO_STOCK` y el
+pedido **no** se crea.
+
+**Flujo de pago (simulado):** el backend no procesa pagos. El pedido nace
+`PENDIENTE`; el cliente simula el pago desde el frontend y un admin o vendedor
+pasa el pedido de `PENDIENTE` a `CONFIRMADO` desde el panel de administración.
+Los estados válidos son `PENDIENTE`, `CONFIRMADO`, `ENVIADO`, `ENTREGADO` y
+`CANCELADO`, y el servidor valida las transiciones. Cancelar un pedido
+`PENDIENTE` libera el stock reservado y entregarlo descuenta el total físico
+y libera la reserva.
 
 ### Errores
 
@@ -403,7 +479,7 @@ src/main/java/com/esam/esam_backend/
 src/main/resources/
 ├── application.yaml  Configuración (puerto, base de datos, Flyway, Cloudinary, JWT)
 ├── db/creacion_admin.sql  Script para crear la BD y el usuario
-└── db/migration/     Migraciones de Flyway (V1 a V7)
+└── db/migration/     Migraciones de Flyway (V1 a V10)
 
 src/test/java/        Pruebas automatizadas
 ```

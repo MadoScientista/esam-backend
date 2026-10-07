@@ -1,0 +1,10 @@
+ALTER TABLE pedido
+  ADD COLUMN tipo_entrega VARCHAR(20) NOT NULL DEFAULT 'DESPACHO';
+
+ALTER TABLE pedido
+  MODIFY nombre_receptor VARCHAR(255) NULL,
+  MODIFY telefono_receptor VARCHAR(255) NULL,
+  MODIFY calle VARCHAR(255) NULL,
+  MODIFY numero VARCHAR(255) NULL,
+  MODIFY comuna_nombre VARCHAR(255) NULL,
+  MODIFY region_nombre VARCHAR(255) NULL;

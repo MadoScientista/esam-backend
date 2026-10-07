@@ -111,6 +111,10 @@ public class ProductoService {
         validarPrecio(datos.getPrecio());
         validarStock(datos.getStock());
         Producto producto = obtenerPorId(sku);
+        if (producto.getStockReservado() > datos.getStock()) {
+            throw new ConflictoStockException(
+                    "El stock total no puede quedar por debajo del stock reservado (" + producto.getStockReservado() + ")");
+        }
         producto.setNombre(datos.getNombre());
         producto.setDescripcion(datos.getDescripcion());
         producto.setPrecio(datos.getPrecio());
@@ -160,6 +164,10 @@ public class ProductoService {
     public Producto setearStock(Long sku, Integer stock) {
         validarStock(stock);
         Producto producto = obtenerPorId(sku);
+        if (producto.getStockReservado() > stock) {
+            throw new ConflictoStockException(
+                    "El stock total no puede quedar por debajo del stock reservado (" + producto.getStockReservado() + ")");
+        }
         producto.setStock(stock);
         return pRepo.save(producto);
     }
@@ -172,6 +180,10 @@ public class ProductoService {
             throw new ConflictoStockException("No hay stock suficiente. Stock actual: " + producto.getStock());
         }
         Integer nuevoStock = producto.getStock() - unidades;
+        if (nuevoStock < producto.getStockReservado()) {
+            throw new ConflictoStockException(
+                    "El stock total no puede quedar por debajo del stock reservado (" + producto.getStockReservado() + ")");
+        }
         producto.setStock(nuevoStock);
         return pRepo.save(producto);
     }
@@ -195,12 +207,13 @@ public class ProductoService {
             throw new PedidoInvalidoException(
                     "El producto " + producto.getIdProducto() + " ya no está disponible");
         }
-        if (producto.getStock() < cantidad) {
+        Integer disponible = producto.getStock() - producto.getStockReservado();
+        if (disponible < cantidad) {
             throw new ConflictoStockException(
                     "Stock insuficiente para el producto " + producto.getIdProducto());
         }
 
-        producto.setStock(producto.getStock() - cantidad);
+        producto.setStockReservado(producto.getStockReservado() + cantidad);
         return pRepo.save(producto);
     }
 
@@ -208,12 +221,28 @@ public class ProductoService {
         Producto producto = pRepo.buscarPorIdParaPedido(idProducto)
                 .orElseThrow(() -> new PedidoInvalidoException(
                         "No se puede reponer el stock de un producto inexistente"));
-        try {
-            producto.setStock(Math.addExact(producto.getStock(), cantidad));
-        } catch (ArithmeticException exception) {
+        if (cantidad > producto.getStockReservado()) {
             throw new ConflictoStockException(
                     "No se puede reponer el stock del producto " + producto.getIdProducto());
         }
+        producto.setStockReservado(producto.getStockReservado() - cantidad);
+        pRepo.save(producto);
+    }
+
+    public void descontarStockPorEntrega(Long idProducto, Integer cantidad) {
+        Producto producto = pRepo.buscarPorIdParaPedido(idProducto)
+                .orElseThrow(() -> new PedidoInvalidoException(
+                        "No se puede descontar el stock de un producto inexistente"));
+        if (cantidad > producto.getStockReservado()) {
+            throw new ConflictoStockException(
+                    "No se puede descontar el stock del producto " + producto.getIdProducto());
+        }
+        if (cantidad > producto.getStock()) {
+            throw new ConflictoStockException(
+                    "No hay stock suficiente para entregar el producto " + producto.getIdProducto());
+        }
+        producto.setStockReservado(producto.getStockReservado() - cantidad);
+        producto.setStock(producto.getStock() - cantidad);
         pRepo.save(producto);
     }
 

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import com.esam.esam_backend.dto.pedido.PedidoDTOResponse;
 import com.esam.esam_backend.dto.pedido.PedidoEstadoDTORequest;
 import com.esam.esam_backend.dto.pedido.PedidoAdminDTOResponse;
 import com.esam.esam_backend.enums.EstadoPedido;
+import com.esam.esam_backend.enums.TipoEntrega;
 import com.esam.esam_backend.exception.ConflictoStockException;
 import com.esam.esam_backend.exception.PedidoInvalidoException;
 import com.esam.esam_backend.mapper.PedidoMapper;
@@ -81,6 +83,7 @@ class PedidoServiceTests {
         carrito.setItems(new ArrayList<>(List.of(item(producto, 2))));
         Direccion direccion = direccion();
         PedidoDTORequest request = new PedidoDTORequest();
+        request.setTipoEntrega(TipoEntrega.DESPACHO);
         request.setIdDireccion(9L);
         PedidoDTOResponse response = new PedidoDTOResponse();
 
@@ -89,7 +92,7 @@ class PedidoServiceTests {
                 .thenReturn(Optional.of(direccion));
         when(carritoRepository.buscarParaPedidoPorUsuario(7L)).thenReturn(Optional.of(carrito));
         when(productoService.reservarStockParaPedido(3L, 2)).thenAnswer(invocation -> {
-            producto.setStock(producto.getStock() - 2);
+            producto.setStockReservado(producto.getStockReservado() + 2);
             return producto;
         });
         when(pedidoRepository.save(any(Pedido.class)))
@@ -116,13 +119,15 @@ class PedidoServiceTests {
         PedidoDTOResponse resultado = pedidoService.crear(7L, request);
 
         assertEquals(response, resultado);
-        assertEquals(8, producto.getStock());
+        assertEquals(10, producto.getStock());
+        assertEquals(2, producto.getStockReservado());
         assertEquals(0, carrito.getItems().size());
 
         ArgumentCaptor<Pedido> pedidoCaptor = ArgumentCaptor.forClass(Pedido.class);
         verify(pedidoRepository).save(pedidoCaptor.capture());
         Pedido pedido = pedidoCaptor.getValue();
         assertEquals(EstadoPedido.PENDIENTE, pedido.getEstado());
+        assertEquals(TipoEntrega.DESPACHO, pedido.getTipoEntrega());
         assertEquals(5000L, pedido.getTotal());
         assertNotNull(pedido.getCreadoEn());
         assertEquals("Receptor", pedido.getNombreReceptor());
@@ -147,6 +152,7 @@ class PedidoServiceTests {
         Producto producto = producto(3L, 2500L, 1);
         carrito.setItems(new ArrayList<>(List.of(item(producto, 2))));
         PedidoDTORequest request = new PedidoDTORequest();
+        request.setTipoEntrega(TipoEntrega.DESPACHO);
         request.setIdDireccion(9L);
 
         when(usuarioRepository.findById(7L)).thenReturn(Optional.of(usuario));
@@ -165,6 +171,7 @@ class PedidoServiceTests {
         Usuario administrador = new Usuario();
         administrador.setIdUsuario(2L);
         Producto producto = producto(3L, 2500L, 4);
+        producto.setStockReservado(2);
         Pedido pedido = new Pedido();
         pedido.setIdPedido(12L);
         pedido.setEstado(EstadoPedido.PENDIENTE);
@@ -181,7 +188,7 @@ class PedidoServiceTests {
         when(pedidoRepository.buscarPorIdParaActualizar(12L)).thenReturn(Optional.of(pedido));
         when(usuarioRepository.findById(2L)).thenReturn(Optional.of(administrador));
         doAnswer(invocation -> {
-            producto.setStock(producto.getStock() + 2);
+            producto.setStockReservado(producto.getStockReservado() - 2);
             return null;
         }).when(productoService).reponerStockPorCancelacion(3L, 2);
         when(detallePedidoService.obtenerPorPedido(12L)).thenReturn(List.of(detalle));
@@ -192,12 +199,56 @@ class PedidoServiceTests {
         PedidoDTOResponse resultado = pedidoService.cambiarEstado(12L, 2L, request);
 
         assertEquals(response, resultado);
-        assertEquals(6, producto.getStock());
+        assertEquals(4, producto.getStock());
+        assertEquals(0, producto.getStockReservado());
         assertEquals(EstadoPedido.CANCELADO, pedido.getEstado());
         assertEquals(1, pedido.getHistorialEstados().size());
         assertEquals(EstadoPedido.PENDIENTE, pedido.getHistorialEstados().get(0).getEstadoAnterior());
         assertEquals(EstadoPedido.CANCELADO, pedido.getHistorialEstados().get(0).getEstadoNuevo());
         verify(productoService).reponerStockPorCancelacion(3L, 2);
+    }
+
+    @Test
+    void entregarPedidoDescuentaStockFisicoYLiberaReserva() {
+        Usuario responsable = new Usuario();
+        responsable.setIdUsuario(2L);
+        Producto producto = producto(3L, 2500L, 4);
+        producto.setStockReservado(2);
+        Pedido pedido = new Pedido();
+        pedido.setIdPedido(12L);
+        pedido.setEstado(EstadoPedido.ENVIADO);
+        DetallePedido detalle = new DetallePedido();
+        detalle.setProducto(producto);
+        detalle.setCantidad(2);
+        pedido.setDetalles(new ArrayList<>(List.of(detalle)));
+        pedido.setHistorialEstados(new ArrayList<>());
+
+        PedidoEstadoDTORequest request = new PedidoEstadoDTORequest();
+        request.setEstado(EstadoPedido.ENTREGADO);
+        PedidoAdminDTOResponse response = new PedidoAdminDTOResponse();
+
+        when(pedidoRepository.buscarPorIdParaActualizar(12L)).thenReturn(Optional.of(pedido));
+        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(responsable));
+        doAnswer(invocation -> {
+            producto.setStockReservado(producto.getStockReservado() - 2);
+            producto.setStock(producto.getStock() - 2);
+            return null;
+        }).when(productoService).descontarStockPorEntrega(3L, 2);
+        when(detallePedidoService.obtenerPorPedido(12L)).thenReturn(List.of(detalle));
+        when(pedidoRepository.save(any(Pedido.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(pedidoMapper.toAdminDTO(pedido, List.of(detalle))).thenReturn(response);
+
+        PedidoDTOResponse resultado = pedidoService.cambiarEstado(12L, 2L, request);
+
+        assertEquals(response, resultado);
+        assertEquals(2, producto.getStock());
+        assertEquals(0, producto.getStockReservado());
+        assertEquals(EstadoPedido.ENTREGADO, pedido.getEstado());
+        assertEquals(EstadoPedido.ENVIADO, pedido.getHistorialEstados().get(0).getEstadoAnterior());
+        assertEquals(EstadoPedido.ENTREGADO, pedido.getHistorialEstados().get(0).getEstadoNuevo());
+        verify(productoService).descontarStockPorEntrega(3L, 2);
+        verify(productoService, never()).reponerStockPorCancelacion(any(), any());
     }
 
     @Test
@@ -213,6 +264,88 @@ class PedidoServiceTests {
         when(usuarioRepository.findById(2L)).thenReturn(Optional.of(administrador));
 
         assertThrows(PedidoInvalidoException.class, () -> pedidoService.cambiarEstado(12L, 2L, request));
+    }
+
+    private void configurarCarritoValido(Usuario usuario, Carrito carrito) {
+        when(usuarioRepository.findById(7L)).thenReturn(Optional.of(usuario));
+        when(carritoRepository.buscarParaPedidoPorUsuario(7L)).thenReturn(Optional.of(carrito));
+    }
+
+    private void configurarGuardadoDePedido() {
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(detallePedidoService.crear(any(Pedido.class), any(Producto.class), any(Integer.class)))
+                .thenAnswer(invocation -> {
+                    Pedido pedido = invocation.getArgument(0);
+                    Producto productoDetalle = invocation.getArgument(1);
+                    Integer cantidad = invocation.getArgument(2);
+                    DetallePedido detalle = new DetallePedido();
+                    detalle.setPedido(pedido);
+                    detalle.setProducto(productoDetalle);
+                    detalle.setNombreProducto(productoDetalle.getNombre());
+                    detalle.setSkuProducto(productoDetalle.getSku());
+                    detalle.setPrecioUnitario(productoDetalle.getPrecio());
+                    detalle.setCantidad(cantidad);
+                    detalle.setSubtotal(productoDetalle.getPrecio() * cantidad);
+                    pedido.getDetalles().add(detalle);
+                    return detalle;
+                });
+        when(detallePedidoService.obtenerPorPedido(any())).thenReturn(List.of());
+        when(pedidoMapper.toDTO(any(Pedido.class), anyList())).thenReturn(new PedidoDTOResponse());
+    }
+
+    @Test
+    void crearPedidoRechazaTipoEntregaNula() {
+        Carrito carrito = new Carrito();
+        Producto producto = producto(3L, 2500L, 10);
+        carrito.setItems(new ArrayList<>(List.of(item(producto, 2))));
+        PedidoDTORequest request = new PedidoDTORequest();
+        request.setIdDireccion(9L);
+
+        assertThrows(PedidoInvalidoException.class, () -> pedidoService.crear(7L, request));
+        verifyNoInteractions(usuarioRepository);
+        verifyNoInteractions(carritoRepository);
+    }
+
+    @Test
+    void crearPedidoDespachoSinDireccionRechaza() {
+        Usuario usuario = new Usuario();
+        usuario.setIdUsuario(7L);
+        PedidoDTORequest request = new PedidoDTORequest();
+        request.setTipoEntrega(TipoEntrega.DESPACHO);
+
+        when(usuarioRepository.findById(7L)).thenReturn(Optional.of(usuario));
+
+        assertThrows(PedidoInvalidoException.class, () -> pedidoService.crear(7L, request));
+        verifyNoInteractions(carritoRepository);
+    }
+
+    @Test
+    void crearPedidoRetiroEnTiendaNoRequiereDireccion() {
+        Usuario usuario = new Usuario();
+        usuario.setIdUsuario(7L);
+        Carrito carrito = new Carrito();
+        Producto producto = producto(3L, 2500L, 10);
+        carrito.setItems(new ArrayList<>(List.of(item(producto, 2))));
+        PedidoDTORequest request = new PedidoDTORequest();
+        request.setTipoEntrega(TipoEntrega.RETIRA_TIENDA);
+
+        configurarCarritoValido(usuario, carrito);
+        when(productoService.reservarStockParaPedido(3L, 2)).thenAnswer(invocation -> {
+            producto.setStockReservado(producto.getStockReservado() + 2);
+            return producto;
+        });
+        configurarGuardadoDePedido();
+
+        pedidoService.crear(7L, request);
+
+        ArgumentCaptor<Pedido> pedidoCaptor = ArgumentCaptor.forClass(Pedido.class);
+        verify(pedidoRepository).save(pedidoCaptor.capture());
+        Pedido pedido = pedidoCaptor.getValue();
+        assertEquals(TipoEntrega.RETIRA_TIENDA, pedido.getTipoEntrega());
+        assertNull(pedido.getNombreReceptor());
+        assertNull(pedido.getComunaNombre());
+        assertNull(pedido.getRegionNombre());
+        verifyNoInteractions(direccionRepository);
     }
 
     private static ItemCarrito item(Producto producto, int cantidad) {

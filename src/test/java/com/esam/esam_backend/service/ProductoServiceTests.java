@@ -97,7 +97,7 @@ class ProductoServiceTests {
     }
 
     @Test
-    void reservarStockBloqueaYGuardaLaCantidadActualizada() {
+    void reservarStockBloqueaReservaYNoTocaStockTotal() {
         Producto producto = producto(7, true);
         when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
         when(productoRepository.save(producto)).thenReturn(producto);
@@ -105,7 +105,8 @@ class ProductoServiceTests {
         Producto resultado = productoService.reservarStockParaPedido(3L, 2);
 
         assertEquals(producto, resultado);
-        assertEquals(5, producto.getStock());
+        assertEquals(7, producto.getStock());
+        assertEquals(2, producto.getStockReservado());
         verify(productoRepository).buscarPorIdParaPedido(3L);
         verify(productoRepository).save(producto);
     }
@@ -133,25 +134,116 @@ class ProductoServiceTests {
     }
 
     @Test
-    void reponerStockUsaElProductoBloqueadoYGuardaElNuevoValor() {
-        Producto producto = producto(5, true);
+    void reservarStockConsideraLoYaReservado() {
+        Producto producto = producto(10, true);
+        producto.setStockReservado(9);
+        when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
+        when(productoRepository.save(producto)).thenReturn(producto);
+
+        productoService.reservarStockParaPedido(3L, 1);
+
+        assertEquals(10, producto.getStock());
+        assertEquals(10, producto.getStockReservado());
+    }
+
+    @Test
+    void reservarStockRechazaCuandoElDisponibleEsInsuficiente() {
+        Producto producto = producto(10, true);
+        producto.setStockReservado(9);
+        when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
+
+        assertThrows(ConflictoStockException.class,
+                () -> productoService.reservarStockParaPedido(3L, 2));
+
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void reponerStockLiberaLaReservaYSoloTocaElReservado() {
+        Producto producto = producto(7, true);
+        producto.setStockReservado(5);
         when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
         when(productoRepository.save(producto)).thenReturn(producto);
 
         productoService.reponerStockPorCancelacion(3L, 2);
 
         assertEquals(7, producto.getStock());
+        assertEquals(3, producto.getStockReservado());
         verify(productoRepository).buscarPorIdParaPedido(3L);
         verify(productoRepository).save(producto);
     }
 
     @Test
-    void reponerStockRechazaDesbordamiento() {
+    void reponerStockRechazaCantidadSuperiorALaReservada() {
         Producto producto = producto(Integer.MAX_VALUE, true);
+        producto.setStockReservado(0);
         when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
 
         assertThrows(ConflictoStockException.class,
                 () -> productoService.reponerStockPorCancelacion(3L, 1));
+
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void descontarStockPorEntregaDescuentoTotalYReserva() {
+        Producto producto = producto(7, true);
+        producto.setStockReservado(5);
+        when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
+        when(productoRepository.save(producto)).thenReturn(producto);
+
+        productoService.descontarStockPorEntrega(3L, 2);
+
+        assertEquals(5, producto.getStock());
+        assertEquals(3, producto.getStockReservado());
+        verify(productoRepository).buscarPorIdParaPedido(3L);
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void descontarStockPorEntregaRechazaCantidadSuperiorALaReservada() {
+        Producto producto = producto(7, true);
+        producto.setStockReservado(1);
+        when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
+
+        assertThrows(ConflictoStockException.class,
+                () -> productoService.descontarStockPorEntrega(3L, 2));
+
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void descontarStockPorEntregaRechazaCantidadSuperiorAlTotal() {
+        Producto producto = producto(1, true);
+        producto.setStockReservado(1);
+        when(productoRepository.buscarPorIdParaPedido(3L)).thenReturn(Optional.of(producto));
+
+        assertThrows(ConflictoStockException.class,
+                () -> productoService.descontarStockPorEntrega(3L, 2));
+
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void setearStockRechazaValorPorDebajoDelReservado() {
+        Producto producto = producto(10, true);
+        producto.setStockReservado(8);
+        when(productoRepository.findById(3L)).thenReturn(Optional.of(producto));
+
+        assertThrows(ConflictoStockException.class,
+                () -> productoService.setearStock(3L, 7));
+
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void disminuirStockRechazaDejarElTotalPorDebajoDelReservado() {
+        Producto producto = producto(10, true);
+        producto.setStockReservado(8);
+        when(productoRepository.findById(3L)).thenReturn(Optional.of(producto));
+
+        assertThrows(ConflictoStockException.class,
+                () -> productoService.disminuirStock(3L, 3));
 
         verify(productoRepository, never()).save(any(Producto.class));
     }

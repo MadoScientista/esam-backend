@@ -12,6 +12,7 @@ import com.esam.esam_backend.dto.pedido.DetallePedidoDTOResponse;
 import com.esam.esam_backend.dto.pedido.PedidoAdminDTOResponse;
 import com.esam.esam_backend.dto.pedido.PedidoDTOResponse;
 import com.esam.esam_backend.dto.pedido.PedidoResumenDTOResponse;
+import com.esam.esam_backend.enums.TipoEntrega;
 import com.esam.esam_backend.model.CambioEstadoPedido;
 import com.esam.esam_backend.model.DetallePedido;
 import com.esam.esam_backend.model.Pedido;
@@ -37,11 +38,16 @@ public class PedidoMapper {
 
         PedidoDTOResponse dto = new PedidoDTOResponse();
         dto.setIdPedido(pedido.getIdPedido());
-        dto.setNumeroPedido(pedido.getNumeroPedido());
-        dto.setEstado(pedido.getEstado());
-        dto.setTotal(pedido.getTotal());
-        dto.setCreadoEn(pedido.getCreadoEn());
+    dto.setNumeroPedido(pedido.getNumeroPedido());
+    dto.setEstado(pedido.getEstado());
+    if (pedido.getTipoEntrega() != null) {
+        dto.setTipoEntrega(pedido.getTipoEntrega().name());
+    }
+    dto.setTotal(pedido.getTotal());
+    dto.setCreadoEn(pedido.getCreadoEn());
+    if (pedido.getTipoEntrega() == TipoEntrega.DESPACHO) {
         dto.setEnvio(toDatosEnvioDTO(pedido));
+    }
         dto.setDetalles(detalles.stream()
                 .map(this::toDetalleDTO)
                 .toList());
@@ -56,8 +62,9 @@ public class PedidoMapper {
         dto.setNumeroPedido(base.getNumeroPedido());
         dto.setEstado(base.getEstado());
         dto.setTotal(base.getTotal());
-        dto.setCreadoEn(base.getCreadoEn());
-        dto.setEnvio(base.getEnvio());
+    dto.setTipoEntrega(base.getTipoEntrega());
+    dto.setCreadoEn(base.getCreadoEn());
+    dto.setEnvio(base.getEnvio());
         dto.setDetalles(base.getDetalles());
         dto.setHistorialEstados(base.getHistorialEstados());
         dto.setIdUsuario(pedido.getUsuario().getIdUsuario());

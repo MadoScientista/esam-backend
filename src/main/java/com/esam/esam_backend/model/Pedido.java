@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.esam.esam_backend.enums.EstadoPedido;
+import com.esam.esam_backend.enums.TipoEntrega;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -40,31 +41,29 @@ public class Pedido{
     @Column(nullable = false, length = 20)
     private EstadoPedido estado;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private TipoEntrega tipoEntrega;
+
     @Column(nullable = false)
     private Long total;
 
     @Column(name = "creado_en", nullable = false, updatable = false)
     private Instant creadoEn;
 
-    @Column(nullable = false)
     private String nombreReceptor;
 
-    @Column(nullable = false)
     private String telefonoReceptor;
 
-    @Column(nullable = false)
     private String calle;
 
-    @Column(nullable = false)
     private String numero;
 
     @Column
     private String complemento;
 
-    @Column(nullable = false)
     private String comunaNombre;
 
-    @Column(nullable = false)
     private String regionNombre;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

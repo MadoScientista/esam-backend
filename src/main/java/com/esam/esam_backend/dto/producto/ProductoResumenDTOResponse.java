@@ -16,4 +16,5 @@ public class ProductoResumenDTOResponse {
     private ImagenProductoResponse imagenPrincipal;
     private MarcaDTO marca;
     private Integer stock;
+    private Integer stockReservado;
 }

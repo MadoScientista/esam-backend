@@ -15,6 +15,7 @@ public class PedidoDTOResponse {
     private Long idPedido;
     private String numeroPedido;
     private EstadoPedido estado;
+    private String tipoEntrega;
     private Long total;
     private Instant creadoEn;
     private DatosEnvioDTOResponse envio;

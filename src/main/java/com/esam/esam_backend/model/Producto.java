@@ -48,6 +48,9 @@ public class Producto{
     private Integer stock;
 
     @Column(nullable = false)
+    private Integer stockReservado = 0;
+
+    @Column(nullable = false)
     private Boolean activo = true;
 
     @Version

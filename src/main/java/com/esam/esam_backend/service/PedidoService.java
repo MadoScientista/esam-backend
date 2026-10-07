@@ -15,6 +15,7 @@ import com.esam.esam_backend.dto.pedido.PedidoDTOResponse;
 import com.esam.esam_backend.dto.pedido.PedidoEstadoDTORequest;
 import com.esam.esam_backend.dto.pedido.PedidoResumenDTOResponse;
 import com.esam.esam_backend.enums.EstadoPedido;
+import com.esam.esam_backend.enums.TipoEntrega;
 import com.esam.esam_backend.exception.DireccionNoEncontradaException;
 import com.esam.esam_backend.exception.PedidoInvalidoException;
 import com.esam.esam_backend.exception.PedidoNoEncontradoException;
@@ -49,13 +50,23 @@ public class PedidoService {
 
     @Transactional
     public PedidoDTOResponse crear(Long idUsuario, PedidoDTORequest request) {
+        if (request.getTipoEntrega() == null) {
+            throw new PedidoInvalidoException("Debe indicar el tipo de entrega del pedido");
+        }
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNoEncontradaException(
                         "No existe un usuario con id " + idUsuario));
-        Direccion direccion = direccionRepository
-                .findByIdDireccionAndUsuarioIdUsuarioAndActivoTrue(request.getIdDireccion(), idUsuario)
-                .orElseThrow(() -> new DireccionNoEncontradaException(
-                        "No existe una dirección activa con id " + request.getIdDireccion()));
+        Direccion direccion = null;
+        if (request.getTipoEntrega() == TipoEntrega.DESPACHO) {
+            if (request.getIdDireccion() == null) {
+                throw new PedidoInvalidoException(
+                        "Para el despacho a domicilio es obligatorio indicar una dirección");
+            }
+            direccion = direccionRepository
+                    .findByIdDireccionAndUsuarioIdUsuarioAndActivoTrue(request.getIdDireccion(), idUsuario)
+                    .orElseThrow(() -> new DireccionNoEncontradaException(
+                            "No existe una dirección activa con id " + request.getIdDireccion()));
+        }
         Carrito carrito = carritoRepository.buscarParaPedidoPorUsuario(idUsuario)
                 .orElseThrow(() -> new PedidoInvalidoException("El usuario no tiene un carrito"));
 
@@ -67,7 +78,7 @@ public class PedidoService {
                 .sorted(Comparator.comparing(item -> item.getProducto().getIdProducto()))
                 .toList();
         Instant ahora = Instant.now();
-        Pedido pedido = crearPedido(usuario, direccion, ahora);
+        Pedido pedido = crearPedido(usuario, direccion, request.getTipoEntrega(), ahora);
         long total = 0;
 
         for (ItemCarrito item : items) {
@@ -144,6 +155,8 @@ public class PedidoService {
         validarTransicion(pedido.getEstado(), request.getEstado());
         if (request.getEstado() == EstadoPedido.CANCELADO) {
             reponerStock(idPedido);
+        } else if (request.getEstado() == EstadoPedido.ENTREGADO) {
+            descontarStockPorEntrega(idPedido);
         }
 
         Instant ahora = Instant.now();
@@ -155,18 +168,21 @@ public class PedidoService {
                 detallePedidoService.obtenerPorPedido(idPedido));
     }
 
-    private Pedido crearPedido(Usuario usuario, Direccion direccion, Instant creadoEn) {
+    private Pedido crearPedido(Usuario usuario, Direccion direccion, TipoEntrega tipoEntrega, Instant creadoEn) {
         Pedido pedido = new Pedido();
         pedido.setNumeroPedido("PED-" + UUID.randomUUID());
         pedido.setEstado(EstadoPedido.PENDIENTE);
+        pedido.setTipoEntrega(tipoEntrega);
         pedido.setCreadoEn(creadoEn);
-        pedido.setNombreReceptor(direccion.getNombreReceptor());
-        pedido.setTelefonoReceptor(direccion.getTelefonoReceptor());
-        pedido.setCalle(direccion.getCalle());
-        pedido.setNumero(direccion.getNumero());
-        pedido.setComplemento(direccion.getComplemento());
-        pedido.setComunaNombre(direccion.getComuna().getNombre());
-        pedido.setRegionNombre(direccion.getComuna().getRegion().getNombre());
+        if (tipoEntrega == TipoEntrega.DESPACHO) {
+            pedido.setNombreReceptor(direccion.getNombreReceptor());
+            pedido.setTelefonoReceptor(direccion.getTelefonoReceptor());
+            pedido.setCalle(direccion.getCalle());
+            pedido.setNumero(direccion.getNumero());
+            pedido.setComplemento(direccion.getComplemento());
+            pedido.setComunaNombre(direccion.getComuna().getNombre());
+            pedido.setRegionNombre(direccion.getComuna().getRegion().getNombre());
+        }
         pedido.setUsuario(usuario);
         pedido.setTotal(0L);
         return pedido;
@@ -192,6 +208,16 @@ public class PedidoService {
                 .toList();
         for (DetallePedido detalle : detalles) {
             productoService.reponerStockPorCancelacion(
+                    detalle.getProducto().getIdProducto(), detalle.getCantidad());
+        }
+    }
+
+    private void descontarStockPorEntrega(Long idPedido) {
+        List<DetallePedido> detalles = detallePedidoService.obtenerPorPedido(idPedido).stream()
+                .sorted(Comparator.comparing(detalle -> detalle.getProducto().getIdProducto()))
+                .toList();
+        for (DetallePedido detalle : detalles) {
+            productoService.descontarStockPorEntrega(
                     detalle.getProducto().getIdProducto(), detalle.getCantidad());
         }
     }

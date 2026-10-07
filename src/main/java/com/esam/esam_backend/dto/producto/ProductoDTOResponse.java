@@ -39,6 +39,10 @@ public class ProductoDTOResponse {
     @Min(value = 0)
     private Integer stock;
 
+    @NotNull
+    @Min(value = 0)
+    private Integer stockReservado;
+
     @NotBlank
     private String marca;
 

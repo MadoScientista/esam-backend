@@ -37,6 +37,7 @@ public class ProductoMapper {
         dto.setMarca(producto.getMarca().getNombre());
         dto.setPrecio(producto.getPrecio());
         dto.setStock(producto.getStock());
+        dto.setStockReservado(producto.getStockReservado());
         dto.setMarcaDetalle(marcaMapper.toDTO(producto.getMarca()));
         dto.setCategorias(producto.getCategorias().stream()
             .map(categoriaMapper::toDTO)
@@ -53,6 +54,7 @@ public class ProductoMapper {
         dto.setImagenPrincipal(imagenProductoMapper.toImagenPrincipalDTO(producto));
         dto.setMarca(marcaMapper.toDTO(producto.getMarca()));
         dto.setStock(producto.getStock());
+        dto.setStockReservado(producto.getStockReservado());
         return dto;
     }
 

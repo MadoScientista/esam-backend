@@ -13,7 +13,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
     List<Usuario> findByRolUsuarioIdRolUsuario(Long idRolUsuario);
 
     @EntityGraph(attributePaths = "rolUsuario")
-    Optional<Usuario> findByCorreo(String correo);
+    Optional<Usuario> findByCorreoIgnoreCase(String correo);
 
     // Cantidad de usuarios asociados a una comuna
     long countByComunaIdComuna(Long idComuna);

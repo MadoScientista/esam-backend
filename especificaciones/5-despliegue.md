@@ -40,6 +40,7 @@ repositorio.
   | `JWT_SECRET` | Clave de firma JWT en Base64, que al decodificarse tenga al menos 32 bytes. |
   | `JWT_EXPIRATION` | Duración de los JWT en milisegundos, definida de acuerdo con la política de sesión. |
   | `CLOUDINARY_URL` | URL de conexión de Cloudinary, guardada como secreto. |
+  | `GOOGLE_CLIENT_ID` | Client ID OAuth del cliente web (`google.oauth.client-id`); define la audiencia aceptada para los ID tokens de Google. No es un secreto, pero debe corresponder al frontend desplegado. Se requiere para habilitar el login con Google. |
 
 - [ ] Generar una clave JWT fuerte y aleatoria para producción; no reutilizar la
   clave de desarrollo ni incluirla en Git, imágenes, argumentos de build,
@@ -48,6 +49,8 @@ repositorio.
   desplegar o ejecutar la aplicación. Documentar el procedimiento para
   rotarlos; cambiar la clave JWT invalida los tokens firmados con la clave
   anterior.
+- [ ] Configurar el Client ID de Google correspondiente a cada entorno y
+  autorizar únicamente los orígenes HTTPS del frontend en Google Cloud.
 - [ ] No copiar `.env` a la imagen ni tratar `.env.example` como archivo de
   producción. Inyectar las variables directamente al contenedor desde la
   configuración segura de la plataforma.

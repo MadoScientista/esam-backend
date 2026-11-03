@@ -19,6 +19,7 @@ import com.esam.esam_backend.enums.TipoEntrega;
 import com.esam.esam_backend.exception.DireccionNoEncontradaException;
 import com.esam.esam_backend.exception.PedidoInvalidoException;
 import com.esam.esam_backend.exception.PedidoNoEncontradoException;
+import com.esam.esam_backend.exception.PerfilIncompletoException;
 import com.esam.esam_backend.exception.UsuarioNoEncontradaException;
 import com.esam.esam_backend.mapper.PedidoMapper;
 import com.esam.esam_backend.model.CambioEstadoPedido;
@@ -56,6 +57,9 @@ public class PedidoService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNoEncontradaException(
                         "No existe un usuario con id " + idUsuario));
+        if (!usuario.esPerfilCompleto()) {
+            throw new PerfilIncompletoException();
+        }
         Direccion direccion = null;
         if (request.getTipoEntrega() == TipoEntrega.DESPACHO) {
             if (request.getIdDireccion() == null) {

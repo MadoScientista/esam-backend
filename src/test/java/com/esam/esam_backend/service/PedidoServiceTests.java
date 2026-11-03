@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,7 @@ import com.esam.esam_backend.dto.pedido.PedidoAdminDTOResponse;
 import com.esam.esam_backend.enums.EstadoPedido;
 import com.esam.esam_backend.enums.TipoEntrega;
 import com.esam.esam_backend.exception.ConflictoStockException;
+import com.esam.esam_backend.exception.PerfilIncompletoException;
 import com.esam.esam_backend.exception.PedidoInvalidoException;
 import com.esam.esam_backend.mapper.PedidoMapper;
 import com.esam.esam_backend.model.Carrito;
@@ -76,7 +78,7 @@ class PedidoServiceTests {
 
     @Test
     void crearPedidoCopiaDatosCalculaTotalYDescuentaStock() {
-        Usuario usuario = new Usuario();
+        Usuario usuario = usuarioCompleto();
         usuario.setIdUsuario(7L);
         Carrito carrito = new Carrito();
         Producto producto = producto(3L, 2500L, 10);
@@ -146,7 +148,7 @@ class PedidoServiceTests {
 
     @Test
     void crearPedidoFallaSiNoHayStockSuficiente() {
-        Usuario usuario = new Usuario();
+        Usuario usuario = usuarioCompleto();
         usuario.setIdUsuario(7L);
         Carrito carrito = new Carrito();
         Producto producto = producto(3L, 2500L, 1);
@@ -308,7 +310,7 @@ class PedidoServiceTests {
 
     @Test
     void crearPedidoDespachoSinDireccionRechaza() {
-        Usuario usuario = new Usuario();
+        Usuario usuario = usuarioCompleto();
         usuario.setIdUsuario(7L);
         PedidoDTORequest request = new PedidoDTORequest();
         request.setTipoEntrega(TipoEntrega.DESPACHO);
@@ -321,7 +323,7 @@ class PedidoServiceTests {
 
     @Test
     void crearPedidoRetiroEnTiendaNoRequiereDireccion() {
-        Usuario usuario = new Usuario();
+        Usuario usuario = usuarioCompleto();
         usuario.setIdUsuario(7L);
         Carrito carrito = new Carrito();
         Producto producto = producto(3L, 2500L, 10);
@@ -353,6 +355,32 @@ class PedidoServiceTests {
         item.setProducto(producto);
         item.setCantidad(cantidad);
         return item;
+    }
+
+    @Test
+    void crearPedidoRechazaUsuarioConPerfilIncompleto() {
+        Usuario usuario = new Usuario();
+        usuario.setIdUsuario(7L);
+        PedidoDTORequest request = new PedidoDTORequest();
+        request.setTipoEntrega(TipoEntrega.RETIRA_TIENDA);
+
+        when(usuarioRepository.findById(7L)).thenReturn(Optional.of(usuario));
+
+        assertThrows(PerfilIncompletoException.class,
+                () -> pedidoService.crear(7L, request));
+        verifyNoInteractions(carritoRepository, direccionRepository);
+    }
+
+    private static Usuario usuarioCompleto() {
+        Usuario usuario = new Usuario();
+        usuario.setNombres("Nombre");
+        usuario.setAPaterno("Apellido");
+        usuario.setRut(12345678L);
+        usuario.setDv("K");
+        usuario.setFechaNacimiento(LocalDate.of(1990, 1, 1));
+        usuario.setCorreo("usuario@ejemplo.cl");
+        usuario.setComuna(new Comuna());
+        return usuario;
     }
 
     private static Producto producto(Long id, Long precio, int stock) {

@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.esam.esam_backend.dto.error.ApiErrorResponse;
 import com.esam.esam_backend.dto.error.CampoErrorDTOResponse;
+import com.esam.esam_backend.security.AutenticacionGoogleException;
+import com.esam.esam_backend.security.ConfiguracionGoogleException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -28,6 +30,30 @@ import jakarta.servlet.http.HttpServletRequest;
 public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(AutenticacionGoogleException.class)
+    public ResponseEntity<ApiErrorResponse> manejarAutenticacionGoogle(
+            AutenticacionGoogleException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.UNAUTHORIZED, "AUTENTICACION_GOOGLE_INVALIDA",
+                "No fue posible autenticar con Google", request);
+    }
+
+    @ExceptionHandler(ConfiguracionGoogleException.class)
+    public ResponseEntity<ApiErrorResponse> manejarConfiguracionGoogle(
+            ConfiguracionGoogleException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.SERVICE_UNAVAILABLE, "GOOGLE_NO_CONFIGURADO",
+                "El inicio de sesión con Google no está disponible", request);
+    }
+
+    @ExceptionHandler(PerfilIncompletoException.class)
+    public ResponseEntity<ApiErrorResponse> manejarPerfilIncompleto(
+            PerfilIncompletoException exception,
+            HttpServletRequest request) {
+        return respuesta(HttpStatus.CONFLICT, "PERFIL_INCOMPLETO",
+                "Complete los datos obligatorios del perfil antes de crear un pedido", request);
+    }
 
     @ExceptionHandler(ProductoNoEncontradoException.class)
     public ResponseEntity<ApiErrorResponse> manejarProductoNoEncontrado(

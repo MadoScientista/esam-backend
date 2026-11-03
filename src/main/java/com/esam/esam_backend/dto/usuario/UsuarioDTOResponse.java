@@ -28,6 +28,7 @@ public class UsuarioDTOResponse {
     private Long rut;
     private String dv;
     private String correo;
+    private boolean perfilCompleto;
     private LocalDate fechaNacimiento;
     private String direccion;
     private RegionDTO region;

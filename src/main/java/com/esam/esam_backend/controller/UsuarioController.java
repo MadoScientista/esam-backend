@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.esam.esam_backend.dto.usuario.UsuarioAdminDTORequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOLogin;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOLoginResponse;
+import com.esam.esam_backend.dto.usuario.GoogleOAuthRequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTORequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOResponse;
 import com.esam.esam_backend.mapper.UsuarioMapper;
@@ -28,6 +29,7 @@ import com.esam.esam_backend.model.Usuario;
 import com.esam.esam_backend.security.CustomUserDetails;
 import com.esam.esam_backend.security.JwtService;
 import com.esam.esam_backend.service.UsuarioService;
+import com.esam.esam_backend.service.GoogleOAuthService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,7 @@ public class UsuarioController {
     private final JwtService jwtService;
     private final UsuarioService usuarioService;
     private final UsuarioMapper usuarioMapper;
+    private final GoogleOAuthService googleOAuthService;
 
     // Obtener un usuario por su id
     @GetMapping("/{id}")
@@ -113,12 +116,24 @@ public class UsuarioController {
 
             return ResponseEntity.ok(response);
 
-        }catch (BadCredentialsException e){
+        }catch (AuthenticationException e){
             UsuarioDTOLoginResponse response = new UsuarioDTOLoginResponse();
             response.setLoggin(false);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
-        
+
+    }
+
+    @PostMapping("/oauth/google")
+    public ResponseEntity<UsuarioDTOLoginResponse> loginConGoogle(
+            @RequestBody @Valid GoogleOAuthRequest request) {
+        CustomUserDetails principal = new CustomUserDetails(
+                googleOAuthService.autenticar(request.idToken()));
+        UsuarioDTOLoginResponse response = new UsuarioDTOLoginResponse();
+        response.setLoggin(true);
+        response.setToken(jwtService.generarToken(principal));
+        response.setUsuario(usuarioMapper.toDTO(principal.getUsuario()));
+        return ResponseEntity.ok(response);
     }
 
     // Registrar un usuario. Es público, pero el rol queda fijo en "cliente".

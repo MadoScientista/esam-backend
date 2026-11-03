@@ -13,6 +13,9 @@ su **stock** y las **imágenes** de cada producto.
 - El acceso depende del rol: hay un catálogo público de lectura, escritura de
   catálogo para vendedores, y usuarios y datos maestros solo para administradores.
   Ver [Autorización](#autorización).
+- También admite inicio de sesión con Google mediante
+  `POST /api/usuarios/oauth/google`; el backend valida el ID token y devuelve
+  el JWT propio de la API.
 - Administra el catálogo de productos: crear, editar, eliminar, buscar por nombre,
   marca, precio o stock, y controlar el stock (aumentar, disminuir o fijar un valor).
 - Permite al cliente armar un **carrito** y crear **pedidos** (retiro en tienda o
@@ -78,12 +81,17 @@ La aplicación lee sus credenciales desde variables de entorno. Crea un archivo
 | `CLOUDINARY_URL` | Credenciales de Cloudinary, con el formato `cloudinary://<key>:<secret>@<cloud_name>` |
 | `JWT_SECRET`     | Clave para firmar los JWT, en Base64. Debe decodificar a 32 bytes o más, porque HS256 la exige. Genera una con `openssl rand -base64 32` |
 | `JWT_EXPIRATION` | Duración del token en milisegundos                                      |
+| `GOOGLE_CLIENT_ID` | Client ID OAuth de Google usado como audiencia para validar ID tokens (`google.oauth.client-id`). Necesaria solo para habilitar el login con Google. |
 
 El archivo `.env` está en el `.gitignore` y la aplicación lo carga sola al
 arrancar, sin necesidad de exportarlo en la terminal.
 
 > `CLOUDINARY_URL` es obligatoria: sin ella la aplicación no levanta. Se puede
 > obtener desde el panel de Cloudinary, en *Settings → API Keys*.
+
+`GOOGLE_CLIENT_ID` se configura en Google Cloud para el cliente web del
+frontend. Si no está definida, el resto del backend puede arrancar, pero
+`POST /api/usuarios/oauth/google` responderá `503`.
 
 ### 4. Iniciar la aplicación
 

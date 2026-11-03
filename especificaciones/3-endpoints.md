@@ -21,6 +21,7 @@ definición del endpoint: tener acceso de lectura no implica permiso de escritur
 |---|---|---|
 | `POST` | `/api/usuarios` | Registrar una cuenta; se crea con rol `cliente`. |
 | `POST` | `/api/usuarios/login` | Iniciar sesión y obtener JWT. |
+| `POST` | `/api/usuarios/oauth/google` | Validar un ID token de Google, vincular o crear una cuenta cliente y obtener JWT de la API. |
 | `GET` | `/api/productos` | Listar productos. |
 | `GET` | `/api/productos/{sku}` | Obtener producto por SKU. |
 | `GET` | `/api/productos/marca/{idONombreMarca}` | Filtrar productos por marca. |

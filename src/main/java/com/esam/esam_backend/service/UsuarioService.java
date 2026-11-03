@@ -172,5 +172,8 @@ public class UsuarioService {
         if (password == null || password.isBlank()) {
             throw new UsuarioInvalidaException("La contraseña es obligatoria al crear un usuario");
         }
+        if (password.length() < 8 || password.length() > 72) {
+            throw new UsuarioInvalidaException("La contraseña debe tener entre 8 y 72 caracteres");
+        }
     }
 }

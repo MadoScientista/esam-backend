@@ -53,7 +53,7 @@ public class Usuario{
     @Column(nullable = false, unique = true)
     private String correo;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
 
     @Column
@@ -78,4 +78,14 @@ public class Usuario{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_comuna")
     private Comuna comuna;
+
+    public boolean esPerfilCompleto() {
+        return nombres != null && !nombres.isBlank()
+                && aPaterno != null && !aPaterno.isBlank()
+                && rut != null
+                && dv != null && !dv.isBlank()
+                && fechaNacimiento != null
+                && correo != null && !correo.isBlank()
+                && comuna != null;
+    }
 }

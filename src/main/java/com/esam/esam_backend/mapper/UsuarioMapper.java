@@ -27,14 +27,17 @@ public class UsuarioMapper {
         dto.setRut(usuario.getRut());
         dto.setDv(usuario.getDv());
         dto.setCorreo(usuario.getCorreo());
+        dto.setPerfilCompleto(usuario.esPerfilCompleto());
         dto.setFechaNacimiento(usuario.getFechaNacimiento());
         dto.setTelefono(usuario.getTelefono());
         RegionDTO region = new RegionDTO();
         dto.setRegion(region);
-        ComunaDTO comuna = new ComunaDTO();
-        comuna.setIdComuna(usuario.getComuna().getIdComuna());
-        comuna.setNombre(usuario.getComuna().getNombre());
-        dto.setComuna(comuna);
+        if (usuario.getComuna() != null) {
+            ComunaDTO comuna = new ComunaDTO();
+            comuna.setIdComuna(usuario.getComuna().getIdComuna());
+            comuna.setNombre(usuario.getComuna().getNombre());
+            dto.setComuna(comuna);
+        }
         RolUsuarioDTO rol = new RolUsuarioDTO();
         rol.setIdRolUsuario(usuario.getRolUsuario().getIdRolUsuario());
         rol.setNombre(usuario.getRolUsuario().getNombre());

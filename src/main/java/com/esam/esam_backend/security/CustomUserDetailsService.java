@@ -26,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService{
             throws UsernameNotFoundException{
 
         // Busca el usuario en la base de datos
-        Usuario usuario = uRepo.findByCorreo(correo)
+        Usuario usuario = uRepo.findByCorreoIgnoreCase(correo)
                     .orElseThrow(() -> 
                         new UsernameNotFoundException(
                             "Usuario no encontrado"));

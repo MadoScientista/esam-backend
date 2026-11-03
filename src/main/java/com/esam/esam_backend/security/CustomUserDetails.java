@@ -56,20 +56,17 @@ public class CustomUserDetails implements UserDetails{
     // Método para obtener la contraseña almacenada del usuario
     @Override 
     public String getPassword(){
-        return usuario.getPassword();
+        return usuario.getPassword() == null ? "" : usuario.getPassword();
     }
 
 
-    // Manejo de cuenta expirada
-    // Como el model Usuario no tiene campo activo/inactivo
-    // por el momento devolverá siempre true
+    // El modelo no distingue vencimiento de cuenta de su estado activo.
     @Override 
     public boolean isAccountNonExpired(){
         return true;
     }
 
-    // Manejo de cuenta bloqueada
-    // Similar al estado de cuenta
+    // No existe un estado de bloqueo independiente.
     @Override 
     public boolean isAccountNonLocked(){
         return true;
@@ -85,13 +82,10 @@ public class CustomUserDetails implements UserDetails{
     // Indica si el usuario está habilitado
     @Override 
     public boolean isEnabled(){
-        return true;
+        return Boolean.TRUE.equals(usuario.getActivo());
     }
 
 }
-
-
-
 
 
 

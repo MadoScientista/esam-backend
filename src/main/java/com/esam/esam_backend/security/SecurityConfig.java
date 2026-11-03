@@ -80,6 +80,7 @@ public class SecurityConfig {
             // el rol no se puede elegir desde el cuerpo de la petición.
             .requestMatchers(HttpMethod.POST,
                 "/api/usuarios/login",
+                "/api/usuarios/oauth/google",
                 "/api/usuarios")
             .permitAll()
 

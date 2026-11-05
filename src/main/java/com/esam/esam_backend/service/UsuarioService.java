@@ -113,7 +113,7 @@ public class UsuarioService {
         usuario.setAPaterno(request.getAPaterno());
         usuario.setAMaterno(request.getAMaterno());
         usuario.setRut(request.getRut());
-        usuario.setDv(request.getDv());
+        usuario.setDv(request.getDv() != null && !request.getDv().isBlank() ? request.getDv() : null);
         usuario.setFechaNacimiento(request.getFechaNacimiento());
         if (direccion != null) {
             usuario.getDirecciones().add(direccion);

@@ -371,6 +371,38 @@ class PedidoServiceTests {
         verifyNoInteractions(carritoRepository, direccionRepository);
     }
 
+    @Test
+    void crearPedidoPermiteUsuarioSinRut() {
+        Usuario usuario = usuarioCompleto();
+        usuario.setIdUsuario(7L);
+        usuario.setRut(null);
+        usuario.setDv(null);
+
+        PedidoDTORequest request = new PedidoDTORequest();
+        request.setTipoEntrega(TipoEntrega.RETIRA_TIENDA);
+
+        Carrito carrito = new Carrito();
+        Producto producto = producto(10L, 5000L, 10);
+        carrito.setItems(new ArrayList<>(List.of(item(producto, 2))));
+        PedidoDTOResponse response = new PedidoDTOResponse();
+
+        when(usuarioRepository.findById(7L)).thenReturn(Optional.of(usuario));
+        when(carritoRepository.buscarParaPedidoPorUsuario(7L)).thenReturn(Optional.of(carrito));
+        when(productoService.reservarStockParaPedido(10L, 2)).thenReturn(producto);
+        when(pedidoRepository.save(any(Pedido.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        DetallePedido detalle = new DetallePedido();
+        detalle.setSubtotal(10000L);
+        when(detallePedidoService.crear(any(Pedido.class), any(Producto.class), any(Integer.class)))
+                .thenReturn(detalle);
+        when(detallePedidoService.obtenerPorPedido(any())).thenReturn(List.of());
+        when(pedidoMapper.toDTO(any(Pedido.class), anyList())).thenReturn(response);
+
+        PedidoDTOResponse resultado = pedidoService.crear(7L, request);
+        assertNotNull(resultado);
+        assertEquals(response, resultado);
+    }
+
     private static Usuario usuarioCompleto() {
         Usuario usuario = new Usuario();
         usuario.setNombres("Nombre");

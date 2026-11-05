@@ -45,11 +45,9 @@ public class UsuarioDTORequest {
     @Size(max = 255)
     private String aMaterno;
 
-    @NotNull
     @Min(value = 1)
     private Long rut;
 
-    @NotBlank
     @Size(max = 1)
     private String dv;
 

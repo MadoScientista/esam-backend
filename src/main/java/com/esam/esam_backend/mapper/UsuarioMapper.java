@@ -61,7 +61,7 @@ public class UsuarioMapper {
         usuario.setAPaterno(dto.getAPaterno());
         usuario.setAMaterno(dto.getAMaterno());
         usuario.setRut(dto.getRut());
-        usuario.setDv(dto.getDv());
+        usuario.setDv(dto.getDv() != null && !dto.getDv().isBlank() ? dto.getDv() : null);
         usuario.setFechaNacimiento(dto.getFechaNacimiento());
         usuario.setDirecciones(direcciones);
         usuario.setTelefono(dto.getTelefono());

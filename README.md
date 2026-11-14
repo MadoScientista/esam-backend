@@ -103,6 +103,19 @@ frontend. Si no está definida, el resto del backend puede arrancar, pero
 La aplicación queda disponible en **http://localhost:8080**. La base de datos se
 crea y se llena sola en el primer inicio (no hace falta hacer nada más).
 
+### Documentación interactiva de la API
+
+Swagger UI descubre automáticamente los endpoints REST y permite probar las
+operaciones desde el navegador:
+
+- Interfaz Swagger UI: `http://localhost:8080/api/swagger`
+- Especificación OpenAPI: `http://localhost:8080/v3/api-docs`
+
+La documentación y la interfaz son públicas. Los endpoints de la API mantienen
+las reglas de autenticación y autorización existentes; como Swagger no tiene
+configurado un esquema JWT, las operaciones protegidas requieren una
+herramienta que permita enviar el encabezado `Authorization`.
+
 Para cargar los productos de demostración en un entorno local, inicia la
 aplicación con el perfil `dev`:
 

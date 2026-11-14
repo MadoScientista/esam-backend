@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/v1/usuarios")
 public class UsuarioController {
 
     private final AuthenticationManager authenticationManager;

@@ -65,6 +65,14 @@ public class SecurityConfig {
         // Reglas de acceso. El orden importa: gana el primer patron que
         // coincide, asi que las rutas concretas van antes que los comodines.
         .authorizeHttpRequests(auth -> auth
+            // Documentación automática de OpenAPI y redirección a Swagger UI.
+            .requestMatchers(
+                "/api/swagger",
+                "/swagger-ui.html",
+                "/swagger-ui/**",
+                "/v3/api-docs/**")
+            .permitAll()
+
             // Catálogo público: cualquiera puede navegar productos, categorías,
             // marcas, regiones, comunas y roles sin token.
             .requestMatchers(HttpMethod.GET,

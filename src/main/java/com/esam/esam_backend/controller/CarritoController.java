@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/carrito")
+@RequestMapping("/api/v1/carrito")
 public class CarritoController {
 
     private final CarritoService carritoService;

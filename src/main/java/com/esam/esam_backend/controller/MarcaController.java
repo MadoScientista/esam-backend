@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor 
-@RequestMapping("/api/marcas")
+@RequestMapping("/api/v1/marcas")
 public class MarcaController {
 
     private final MarcaService marcaService;

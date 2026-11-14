@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api/v1/roles")
 public class RolUsuarioController {
 
     private final RolUsuarioService rolUsuarioService;

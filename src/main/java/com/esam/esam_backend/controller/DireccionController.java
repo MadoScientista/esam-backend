@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/direcciones")
+@RequestMapping("/api/v1/direcciones")
 public class DireccionController {
 
     private final DireccionService direccionService;

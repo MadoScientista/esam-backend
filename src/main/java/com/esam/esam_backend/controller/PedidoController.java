@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/pedidos")
+@RequestMapping("/api/v1/pedidos")
 public class PedidoController {
 
     private final PedidoService pedidoService;

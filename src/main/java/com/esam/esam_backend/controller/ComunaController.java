@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor 
-@RequestMapping("/api/comunas")
+@RequestMapping("/api/v1/comunas")
 public class ComunaController {
 
     private final ComunaService comunaService;

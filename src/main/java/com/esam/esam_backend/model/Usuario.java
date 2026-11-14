@@ -82,8 +82,6 @@ public class Usuario{
     public boolean esPerfilCompleto() {
         return nombres != null && !nombres.isBlank()
                 && aPaterno != null && !aPaterno.isBlank()
-                && rut != null
-                && dv != null && !dv.isBlank()
                 && fechaNacimiento != null
                 && correo != null && !correo.isBlank()
                 && comuna != null;

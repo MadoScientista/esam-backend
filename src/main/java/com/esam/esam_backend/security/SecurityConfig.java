@@ -76,99 +76,99 @@ public class SecurityConfig {
             // Catálogo público: cualquiera puede navegar productos, categorías,
             // marcas, regiones, comunas y roles sin token.
             .requestMatchers(HttpMethod.GET,
-                "/api/productos", "/api/productos/**",
-                "/api/categorias", "/api/categorias/**",
-                "/api/marcas", "/api/marcas/**",
-                "/api/regiones", "/api/regiones/**",
-                "/api/comunas", "/api/comunas/**",
-                "/api/roles", "/api/roles/**")
+                "/api/v1/productos", "/api/v1/productos/**",
+                "/api/v1/categorias", "/api/v1/categorias/**",
+                "/api/v1/marcas", "/api/v1/marcas/**",
+                "/api/v1/regiones", "/api/v1/regiones/**",
+                "/api/v1/comunas", "/api/v1/comunas/**",
+                "/api/v1/roles", "/api/v1/roles/**")
             .permitAll()
 
             // Login y registro público. El registro siempre crea un "cliente":
             // el rol no se puede elegir desde el cuerpo de la petición.
             .requestMatchers(HttpMethod.POST,
-                "/api/usuarios/login",
-                "/api/usuarios/oauth/google",
-                "/api/usuarios")
+                "/api/v1/usuarios/login",
+                "/api/v1/usuarios/oauth/google",
+                "/api/v1/usuarios")
             .permitAll()
 
             // Perfil propio: cualquier usuario autenticado.
-            .requestMatchers(HttpMethod.GET, "/api/usuarios/perfil")
+            .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/perfil")
             .authenticated()
-            .requestMatchers(HttpMethod.PUT, "/api/usuarios/perfil")
+            .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/perfil")
             .authenticated()
 
             // Vendedor y admin gestionan el catálogo.
             .requestMatchers(
                 HttpMethod.POST,
-                "/api/productos", "/api/productos/**")
+                "/api/v1/productos", "/api/v1/productos/**")
             .hasAnyRole("admin", "vendedor")
             // Solo admin puede cambiar cuál imagen se expone como principal.
             .requestMatchers(HttpMethod.PUT,
-                "/api/productos/*/imagenes/*/principal")
+                "/api/v1/productos/*/imagenes/*/principal")
             .hasRole("admin")
             .requestMatchers(HttpMethod.PUT,
-                "/api/productos/**")
+                "/api/v1/productos/**")
             .hasAnyRole("admin", "vendedor")
             .requestMatchers(HttpMethod.DELETE,
-                "/api/productos/**")
+                "/api/v1/productos/**")
             .hasAnyRole("admin", "vendedor")
 
             // Solo admin puede crear, editar o eliminar categorías.
-            .requestMatchers(HttpMethod.POST, "/api/categorias", "/api/categorias/**")
+            .requestMatchers(HttpMethod.POST, "/api/v1/categorias", "/api/v1/categorias/**")
             .hasRole("admin")
-            .requestMatchers(HttpMethod.PUT, "/api/categorias/**")
+            .requestMatchers(HttpMethod.PUT, "/api/v1/categorias/**")
             .hasRole("admin")
-            .requestMatchers(HttpMethod.DELETE, "/api/categorias/**")
+            .requestMatchers(HttpMethod.DELETE, "/api/v1/categorias/**")
             .hasRole("admin")
 
             // Marcas, geografía y roles: solo admin.
             .requestMatchers(
                 HttpMethod.POST,
-                "/api/marcas/**",
-                "/api/regiones/**",
-                "/api/comunas/**",
-                "/api/roles/**")
+                "/api/v1/marcas/**",
+                "/api/v1/regiones/**",
+                "/api/v1/comunas/**",
+                "/api/v1/roles/**")
             .hasRole("admin")
             .requestMatchers(HttpMethod.PUT,
-                "/api/marcas/**",
-                "/api/regiones/**",
-                "/api/comunas/**",
-                "/api/roles/**")
+                "/api/v1/marcas/**",
+                "/api/v1/regiones/**",
+                "/api/v1/comunas/**",
+                "/api/v1/roles/**")
             .hasRole("admin")
             .requestMatchers(HttpMethod.DELETE,
-                "/api/marcas/**",
-                "/api/regiones/**",
-                "/api/comunas/**",
-                "/api/roles/**")
+                "/api/v1/marcas/**",
+                "/api/v1/regiones/**",
+                "/api/v1/comunas/**",
+                "/api/v1/roles/**")
             .hasRole("admin")
 
             // El resumen del dashboard está disponible para admin y vendedor.
-            .requestMatchers(HttpMethod.GET, "/api/dashboard/**")
+            .requestMatchers(HttpMethod.GET, "/api/v1/dashboard/**")
             .hasAnyRole("admin", "vendedor")
 
             // Gestión de usuarios: solo admin.
-            .requestMatchers(HttpMethod.POST, "/api/usuarios/admin")
+            .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/admin")
             .hasRole("admin")
             .requestMatchers(HttpMethod.GET,
-                "/api/usuarios",
-                "/api/usuarios/**")
+                "/api/v1/usuarios",
+                "/api/v1/usuarios/**")
             .hasRole("admin")
-            .requestMatchers(HttpMethod.PUT, "/api/usuarios/**")
+            .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/**")
             .hasRole("admin")
-            .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**")
+            .requestMatchers(HttpMethod.DELETE, "/api/v1/usuarios/**")
             .hasRole("admin")
             // Los clientes solo consultan sus pedidos desde el controlador;
             // las consultas globales y los cambios de estado son de admin y vendedor.
             .requestMatchers(HttpMethod.GET,
-                "/api/pedidos/admin", "/api/pedidos/admin/**")
+                "/api/v1/pedidos/admin", "/api/v1/pedidos/admin/**")
             .hasAnyRole("admin", "vendedor")
             .requestMatchers(HttpMethod.PUT,
-                "/api/pedidos/admin/**")
+                "/api/v1/pedidos/admin/**")
             .hasAnyRole("admin", "vendedor")
-            .requestMatchers(HttpMethod.GET, "/api/pedidos/**")
+            .requestMatchers(HttpMethod.GET, "/api/v1/pedidos/**")
             .authenticated()
-            .requestMatchers(HttpMethod.POST, "/api/pedidos")
+            .requestMatchers(HttpMethod.POST, "/api/v1/pedidos")
             .authenticated()
 
             .anyRequest()

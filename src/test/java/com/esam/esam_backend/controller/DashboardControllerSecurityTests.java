@@ -44,9 +44,9 @@ class DashboardControllerSecurityTests {
 
     @Test
     void administradorYVendedorPuedenConsultarElResumen() throws Exception {
-        mockMvc.perform(get("/api/dashboard/resumen").with(user("admin").roles("admin")))
+        mockMvc.perform(get("/api/v1/dashboard/resumen").with(user("admin").roles("admin")))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/api/dashboard/resumen").with(user("vendedor").roles("vendedor")))
+        mockMvc.perform(get("/api/v1/dashboard/resumen").with(user("vendedor").roles("vendedor")))
                 .andExpect(status().isOk());
 
         verify(dashboardService, org.mockito.Mockito.times(2)).obtenerResumen();
@@ -54,7 +54,7 @@ class DashboardControllerSecurityTests {
 
     @Test
     void clienteNoPuedeConsultarElResumen() throws Exception {
-        mockMvc.perform(get("/api/dashboard/resumen").with(user("cliente").roles("cliente")))
+        mockMvc.perform(get("/api/v1/dashboard/resumen").with(user("cliente").roles("cliente")))
                 .andExpect(status().isForbidden());
 
         verifyNoInteractions(dashboardService);
@@ -62,7 +62,7 @@ class DashboardControllerSecurityTests {
 
     @Test
     void laConsultaSinAutenticacionSeRechaza() throws Exception {
-        mockMvc.perform(get("/api/dashboard/resumen"))
+        mockMvc.perform(get("/api/v1/dashboard/resumen"))
                 .andExpect(status().isUnauthorized());
 
         verifyNoInteractions(dashboardService);

@@ -49,9 +49,9 @@ class PedidoControllerSecurityTests {
 
     @Test
     void adminYVendedorPuedenListarTodosLosPedidos() throws Exception {
-        mockMvc.perform(get("/api/pedidos/admin").with(user(principalDe("admin"))))
+        mockMvc.perform(get("/api/v1/pedidos/admin").with(user(principalDe("admin"))))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/api/pedidos/admin").with(user(principalDe("vendedor"))))
+        mockMvc.perform(get("/api/v1/pedidos/admin").with(user(principalDe("vendedor"))))
                 .andExpect(status().isOk());
 
         verify(pedidoService, org.mockito.Mockito.times(2)).obtenerTodosParaAdmin();
@@ -59,9 +59,9 @@ class PedidoControllerSecurityTests {
 
     @Test
     void adminYVendedorPuedenConsultarUnPedidoPorId() throws Exception {
-        mockMvc.perform(get("/api/pedidos/admin/1").with(user(principalDe("admin"))))
+        mockMvc.perform(get("/api/v1/pedidos/admin/1").with(user(principalDe("admin"))))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/api/pedidos/admin/1").with(user(principalDe("vendedor"))))
+        mockMvc.perform(get("/api/v1/pedidos/admin/1").with(user(principalDe("vendedor"))))
                 .andExpect(status().isOk());
 
         verify(pedidoService, org.mockito.Mockito.times(2)).obtenerPorIdParaAdmin(1L);
@@ -69,11 +69,11 @@ class PedidoControllerSecurityTests {
 
     @Test
     void adminYVendedorPuedenCambiarElEstadoDeUnPedido() throws Exception {
-        mockMvc.perform(put("/api/pedidos/admin/1/estado")
+        mockMvc.perform(put("/api/v1/pedidos/admin/1/estado")
                 .contentType("application/json").content("{\"estado\":\"CONFIRMADO\"}")
                 .with(user(principalDe("admin"))))
                 .andExpect(status().isOk());
-        mockMvc.perform(put("/api/pedidos/admin/1/estado")
+        mockMvc.perform(put("/api/v1/pedidos/admin/1/estado")
                 .contentType("application/json").content("{\"estado\":\"CONFIRMADO\"}")
                 .with(user(principalDe("vendedor"))))
                 .andExpect(status().isOk());
@@ -86,11 +86,11 @@ class PedidoControllerSecurityTests {
 
     @Test
     void clienteNoPuedeAccederALaAdministracionDePedidos() throws Exception {
-        mockMvc.perform(get("/api/pedidos/admin").with(user(principalDe("cliente"))))
+        mockMvc.perform(get("/api/v1/pedidos/admin").with(user(principalDe("cliente"))))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(get("/api/pedidos/admin/1").with(user(principalDe("cliente"))))
+        mockMvc.perform(get("/api/v1/pedidos/admin/1").with(user(principalDe("cliente"))))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(put("/api/pedidos/admin/1/estado")
+        mockMvc.perform(put("/api/v1/pedidos/admin/1/estado")
                 .contentType("application/json").content("{\"estado\":\"CONFIRMADO\"}")
                 .with(user(principalDe("cliente"))))
                 .andExpect(status().isForbidden());
@@ -100,9 +100,9 @@ class PedidoControllerSecurityTests {
 
     @Test
     void sinAutenticacionNoSeAccedeALaAdministracionDePedidos() throws Exception {
-        mockMvc.perform(get("/api/pedidos/admin"))
+        mockMvc.perform(get("/api/v1/pedidos/admin"))
                 .andExpect(status().isUnauthorized());
-        mockMvc.perform(put("/api/pedidos/admin/1/estado")
+        mockMvc.perform(put("/api/v1/pedidos/admin/1/estado")
                 .contentType("application/json").content("{\"estado\":\"CONFIRMADO\"}"))
                 .andExpect(status().isUnauthorized());
 

@@ -75,7 +75,7 @@ class ProductoImagenPrincipalSecurityTests {
 
     @Test
     void vendedorNoPuedeCambiarImagenPrincipal() throws Exception {
-        mockMvc.perform(put("/api/productos/7/imagenes/11/principal")
+        mockMvc.perform(put("/api/v1/productos/7/imagenes/11/principal")
                 .with(user("vendedor").roles("vendedor")))
                 .andExpect(status().isForbidden());
 
@@ -84,7 +84,7 @@ class ProductoImagenPrincipalSecurityTests {
 
     @Test
     void administradorPuedeCambiarImagenPrincipal() throws Exception {
-        mockMvc.perform(put("/api/productos/7/imagenes/11/principal")
+        mockMvc.perform(put("/api/v1/productos/7/imagenes/11/principal")
                 .with(user("admin").roles("admin")))
                 .andExpect(status().isOk());
 

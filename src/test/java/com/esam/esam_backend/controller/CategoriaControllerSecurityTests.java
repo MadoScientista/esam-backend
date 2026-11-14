@@ -82,19 +82,19 @@ class CategoriaControllerSecurityTests {
 
     @Test
     void consultasDeCategoriasSonPublicas() throws Exception {
-        mockMvc.perform(get("/api/categorias"))
+        mockMvc.perform(get("/api/v1/categorias"))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/api/categorias/raiz"))
+        mockMvc.perform(get("/api/v1/categorias/raiz"))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/api/categorias/padre/1"))
+        mockMvc.perform(get("/api/v1/categorias/padre/1"))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/api/categorias/1"))
+        mockMvc.perform(get("/api/v1/categorias/1"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void clienteNoPuedeCrearCategorias() throws Exception {
-        mockMvc.perform(post("/api/categorias").contentType("application/json")
+        mockMvc.perform(post("/api/v1/categorias").contentType("application/json")
                 .content("{\"nombre\":\"Categoria\"}").with(user("cliente").roles("cliente")))
                 .andExpect(status().isForbidden());
 
@@ -103,7 +103,7 @@ class CategoriaControllerSecurityTests {
 
     @Test
     void vendedorNoPuedeEditarCategorias() throws Exception {
-        mockMvc.perform(put("/api/categorias/1").contentType("application/json")
+        mockMvc.perform(put("/api/v1/categorias/1").contentType("application/json")
                 .content("{\"nombre\":\"Categoria\"}").with(user("vendedor").roles("vendedor")))
                 .andExpect(status().isForbidden());
 
@@ -112,7 +112,7 @@ class CategoriaControllerSecurityTests {
 
     @Test
     void clienteNoPuedeEliminarCategorias() throws Exception {
-        mockMvc.perform(delete("/api/categorias/1").with(user("cliente").roles("cliente")))
+        mockMvc.perform(delete("/api/v1/categorias/1").with(user("cliente").roles("cliente")))
                 .andExpect(status().isForbidden());
 
         verifyNoInteractions(categoriaService, categoriaMapper);
@@ -120,13 +120,13 @@ class CategoriaControllerSecurityTests {
 
     @Test
     void administradorPuedeCrearEditarYEliminarCategorias() throws Exception {
-        mockMvc.perform(post("/api/categorias").contentType("application/json")
+        mockMvc.perform(post("/api/v1/categorias").contentType("application/json")
                 .content("{\"nombre\":\"Categoria\"}").with(user("admin").roles("admin")))
                 .andExpect(status().isCreated());
-        mockMvc.perform(put("/api/categorias/1").contentType("application/json")
+        mockMvc.perform(put("/api/v1/categorias/1").contentType("application/json")
                 .content("{\"nombre\":\"Categoria\"}").with(user("admin").roles("admin")))
                 .andExpect(status().isOk());
-        mockMvc.perform(delete("/api/categorias/1").with(user("admin").roles("admin")))
+        mockMvc.perform(delete("/api/v1/categorias/1").with(user("admin").roles("admin")))
                 .andExpect(status().isNoContent());
 
         verify(categoriaService).guardar(org.mockito.ArgumentMatchers.any(CategoriaDTORequest.class));
@@ -140,15 +140,15 @@ class CategoriaControllerSecurityTests {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "categoria.png", "image/png", new byte[] { 1, 2, 3 });
 
-        mockMvc.perform(multipart("/api/categorias/1/imagen")
+        mockMvc.perform(multipart("/api/v1/categorias/1/imagen")
                 .file(file)
                 .with(user("vendedor").roles("vendedor")))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(multipart("/api/categorias/1/imagen")
+        mockMvc.perform(multipart("/api/v1/categorias/1/imagen")
                 .file(file)
                 .with(user("admin").roles("admin")))
                 .andExpect(status().isOk());
-        mockMvc.perform(delete("/api/categorias/1/imagen")
+        mockMvc.perform(delete("/api/v1/categorias/1/imagen")
                 .with(user("admin").roles("admin")))
                 .andExpect(status().isNoContent());
 

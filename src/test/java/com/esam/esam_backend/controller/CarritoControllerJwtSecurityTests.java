@@ -89,7 +89,7 @@ class CarritoControllerJwtSecurityTests {
 
     @Test
     void jwtValidoPermiteAlClienteLlegarAlEndpointDeCarrito() throws Exception {
-        mockMvc.perform(get("/api/carrito").header("Authorization", "Bearer " + token))
+        mockMvc.perform(get("/api/v1/carrito").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
 
         verify(userDetailsService).loadUserByUsername("cliente@ejemplo.cl");
@@ -98,7 +98,7 @@ class CarritoControllerJwtSecurityTests {
 
     @Test
     void jwtValidoNoBloqueaUnEndpointPublico() throws Exception {
-        mockMvc.perform(get("/api/roles").header("Authorization", "Bearer " + token))
+        mockMvc.perform(get("/api/v1/roles").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
 
         verify(userDetailsService).loadUserByUsername("cliente@ejemplo.cl");
@@ -114,7 +114,7 @@ class CarritoControllerJwtSecurityTests {
                         .roles("cliente")
                         .build());
 
-        mockMvc.perform(get("/api/roles")
+        mockMvc.perform(get("/api/v1/roles")
                 .header("Authorization", "Bearer " + tokenConOtraFirma))
                 .andExpect(status().isOk());
 
@@ -130,7 +130,7 @@ class CarritoControllerJwtSecurityTests {
                         .roles("cliente")
                         .build());
 
-        mockMvc.perform(get("/api/carrito")
+        mockMvc.perform(get("/api/v1/carrito")
                 .header("Authorization", "Bearer " + tokenConOtraFirma))
                 .andExpect(status().isUnauthorized());
 
@@ -139,7 +139,7 @@ class CarritoControllerJwtSecurityTests {
 
     @Test
     void sinJwtElEndpointProtegidoNoLlegaAlControlador() throws Exception {
-        mockMvc.perform(get("/api/carrito"))
+        mockMvc.perform(get("/api/v1/carrito"))
                 .andExpect(status().isUnauthorized());
 
         verifyNoInteractions(carritoService);

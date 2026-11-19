@@ -43,6 +43,9 @@ Region 1─N Comuna 1─N Direccion N─1 Usuario N─1 RolUsuario
                                                 └── N─1 Producto
                                                          │
                                               N─1 Marca ─┴── 1─N ImagenProducto
+
+Usuario 1─N IdentidadExterna
+Usuario 1─N CambioEstadoPedido
 ```
 
 ### Resumen de cardinalidades
@@ -56,6 +59,8 @@ Region 1─N Comuna 1─N Direccion N─1 Usuario N─1 RolUsuario
 | Usuario | 1 : N | Direccion | |
 | Usuario | 1 : 1 | Carrito | `usuario_id` único en `carrito` |
 | Usuario | 1 : N | Pedido | |
+| Usuario | 1 : N | IdentidadExterna | Vínculos OAuth, por ejemplo con Google |
+| Usuario | 1 : N | CambioEstadoPedido | Usuario actor responsable de cada cambio |
 | Marca | 1 : N | Producto | |
 | Producto | N : M | Categoria | Tabla intermedia `producto_categoria` |
 | Categoria | N : 1 | Categoria (padre) | Autorreferencia opcional |
@@ -63,6 +68,7 @@ Region 1─N Comuna 1─N Direccion N─1 Usuario N─1 RolUsuario
 | Carrito | 1 : N | ItemCarrito | cascade ALL + orphanRemoval |
 | Producto | 1 : N | ItemCarrito | |
 | Pedido | 1 : N | DetallePedido | cascade ALL |
+| Pedido | 1 : N | CambioEstadoPedido | Historial de estados; cascade ALL |
 | Producto | 1 : N | DetallePedido | Referencia de trazabilidad |
 
 ---
@@ -214,7 +220,7 @@ PK compuesta (`id_producto`, `id_categoria`).
 | dv | String | Opcional, longitud 1 |
 | fechaNacimiento | LocalDate | Opcional |
 | correo | String | Único, no nulo (`@Email`, `@NotBlank`) |
-| password | String | No nulo |
+| password | String | Opcional; nulo para usuarios creados mediante identidad externa/OAuth |
 | telefono | String | Opcional |
 | activo | Boolean | Por defecto `true` |
 | rolUsuario | RolUsuario | `@ManyToOne`, no nulo (`id_rol_usuario`) |
@@ -231,6 +237,23 @@ PK compuesta (`id_producto`, `id_categoria`).
 - `1 Usuario ─── 1 Carrito`
 - `1 Usuario ─── N Pedido`
 - `N Usuario ─── 1 Comuna` (opcional)
+- `1 Usuario ─── N IdentidadExterna`
+- `1 Usuario ─── N CambioEstadoPedido` (como actor)
+
+### IdentidadExterna
+
+| Propiedad | Tipo | Restricciones |
+|---|---|---|
+| idIdentidadExterna | Long | PK |
+| proveedor | String | No nulo, longitud 32 |
+| subject | String | No nulo, longitud 255. Identificador único del usuario otorgado por el proveedor |
+| usuario | Usuario | `@ManyToOne`, no nulo (`id_usuario`) |
+
+**Restricción única:** (`proveedor`, `subject`)
+
+**Relaciones:** `N IdentidadExterna ─── 1 Usuario`
+
+**Nota de modelado:** el par proveedor/subject identifica una cuenta externa. Google utiliza `proveedor = "google"` y el identificador de Google como `subject`. En el alta OAuth el usuario puede no tener contraseña local.
 
 ### Direccion
 
@@ -285,13 +308,13 @@ PK compuesta (`id_producto`, `id_categoria`).
 | tipoEntrega | TipoEntrega | `@Enumerated(STRING)`, no nulo, longitud 20 (`RETIRA_TIENDA` / `DESPACHO`) |
 | total | Long | No nulo |
 | creadoEn | Instant | No nulo, asignado al crear el pedido |
-| nombreReceptor | String | Solo para `DESPACHO` (copia de datos de envío) |
-| telefonoReceptor | String | Solo para `DESPACHO` (copia) |
-| calle | String | Solo para `DESPACHO` (copia) |
-| numero | String | Solo para `DESPACHO` (copia) |
+| nombreReceptor | String | Opcional; solo se copia para `DESPACHO` |
+| telefonoReceptor | String | Opcional; solo se copia para `DESPACHO` |
+| calle | String | Opcional; solo se copia para `DESPACHO` |
+| numero | String | Opcional; solo se copia para `DESPACHO` |
 | complemento | String | Opcional (copia) |
-| comunaNombre | String | Solo para `DESPACHO` (copia como texto) |
-| regionNombre | String | Solo para `DESPACHO` (copia como texto) |
+| comunaNombre | String | Opcional; solo se copia para `DESPACHO` |
+| regionNombre | String | Opcional; solo se copia para `DESPACHO` |
 | usuario | Usuario | `@ManyToOne`, no nulo (`usuario_id`) |
 | detalles | List\<DetallePedido\> | `@OneToMany(mappedBy = "pedido")`, cascade ALL |
 | historialEstados | List\<CambioEstadoPedido\> | `@OneToMany(mappedBy = "pedido")`, cascade ALL |

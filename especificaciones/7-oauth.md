@@ -83,8 +83,9 @@ Decisiones para orientar la implementación:
 - El perfil se completa con `PUT /api/usuarios/perfil`, sin exigir una
   contraseña local para cuentas OAuth.
 - La respuesta del perfil admite comuna ausente hasta completar el onboarding.
-- `perfilCompleto` refleja que estén presentes nombres, apellido paterno, RUT,
-  dígito verificador, fecha de nacimiento, correo y comuna.
+- `perfilCompleto` refleja que estén presentes nombres, apellido paterno, fecha
+  de nacimiento, correo y comuna. El RUT y su dígito verificador no son
+  requisitos para considerar completo el perfil.
 - Proteger la creación de pedidos para que un perfil incompleto no pueda
   comprar; mantener disponibles el catálogo, autenticación y operaciones
   necesarias para completar el perfil.

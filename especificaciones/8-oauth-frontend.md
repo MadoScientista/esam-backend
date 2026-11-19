@@ -120,8 +120,8 @@ guardar el ID token de Google como sesión de la aplicación.
   `false`, dirigir al usuario al formulario de completar perfil.
 - La cuenta puede navegar y autenticarse con perfil incompleto, pero la API
   rechaza la creación de pedidos hasta que estén completos los campos
-  requeridos: nombres, apellido paterno, RUT, dígito verificador, fecha de
-  nacimiento, correo y comuna.
+  requeridos: nombres, apellido paterno, fecha de nacimiento, correo y comuna.
+  El RUT y su dígito verificador no son necesarios para completar el perfil.
 - Para completar o actualizar el perfil, usar `PUT /api/usuarios/perfil` con
   el JWT propio. El contrato de `UsuarioDTORequest`, sus campos requeridos y
   las validaciones están descritos en [4-dtos.md](./4-dtos.md#cliente-perfil-direcciones-carrito-y-pedidos).

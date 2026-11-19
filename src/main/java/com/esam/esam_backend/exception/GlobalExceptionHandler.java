@@ -52,7 +52,8 @@ public class GlobalExceptionHandler {
             PerfilIncompletoException exception,
             HttpServletRequest request) {
         return respuesta(HttpStatus.CONFLICT, "PERFIL_INCOMPLETO",
-                "Complete los datos obligatorios del perfil antes de crear un pedido", request);
+                    "Se requieren nombres, apellido paterno, correo y fecha de nacimiento para crear un pedido",
+                    request);
     }
 
     @ExceptionHandler(ProductoNoEncontradoException.class)

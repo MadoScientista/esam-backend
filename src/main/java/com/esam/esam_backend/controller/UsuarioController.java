@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
 
 import com.esam.esam_backend.dto.usuario.UsuarioAdminDTORequest;
 import com.esam.esam_backend.dto.usuario.UsuarioDTOLogin;
@@ -32,6 +33,7 @@ import com.esam.esam_backend.service.UsuarioService;
 import com.esam.esam_backend.service.GoogleOAuthService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.groups.Default;
 import lombok.RequiredArgsConstructor;
 
 
@@ -138,7 +140,9 @@ public class UsuarioController {
 
     // Registrar un usuario. Es público, pero el rol queda fijo en "cliente".
     @PostMapping
-    public ResponseEntity<UsuarioDTOResponse> guardar(@RequestBody @Valid UsuarioDTORequest request) {
+    public ResponseEntity<UsuarioDTOResponse> guardar(
+            @RequestBody @Validated({Default.class, UsuarioDTORequest.Creacion.class})
+            UsuarioDTORequest request) {
 
         Usuario usuario = usuarioService.guardar(request);
 
@@ -149,7 +153,8 @@ public class UsuarioController {
     // Crear un usuario eligiendo su rol. Solo administradores.
     @PostMapping("/admin")
     public ResponseEntity<UsuarioDTOResponse> guardarPorAdmin(
-            @RequestBody @Valid UsuarioAdminDTORequest request) {
+            @RequestBody @Validated({Default.class, UsuarioDTORequest.Creacion.class})
+            UsuarioAdminDTORequest request) {
 
         Usuario usuario = usuarioService.guardar(request);
 

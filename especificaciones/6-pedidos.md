@@ -27,3 +27,10 @@
 8. El pago es simulado y no se procesa en el backend: no existe endpoint de pago. El pedido nace `PENDIENTE`, el frontend del cliente puede simular la pasarela en su interfaz y solo un **admin o vendedor** registra el pago aceptado, cambiando el pedido a `CONFIRMADO` con `PUT /api/pedidos/admin/{idPedido}/estado`. Esa ruta está vedada al rol `cliente`.
 
 9. Todo cambio de estado queda registrado en el historial del pedido con el estado anterior, el nuevo y la fecha, y se audita quién lo hizo en el registro (aunque el DTO de respuesta no expone ese usuario).
+
+10. Solo un usuario autenticado puede crear un pedido. El backend valida
+    internamente que el usuario tenga nombres, apellido paterno, correo y fecha
+    de nacimiento; estos datos no forman parte de la solicitud del pedido y son
+    los que determinan `perfilCompleto`. No se requiere una comuna registrada.
+    `DESPACHO` requiere una dirección propia y activa; `RETIRA_TIENDA` no
+    requiere dirección.

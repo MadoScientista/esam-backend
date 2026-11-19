@@ -84,10 +84,10 @@ public class UsuarioService {
     public Usuario editar(Long id, UsuarioAdminDTORequest request) {
         Usuario usuario = obtenerUsuario(id);
 
-        RolUsuario rol = obtenerRol(request.getIdRolUsuario());
-
         actualizarDatos(usuario, request);
-        usuario.setRolUsuario(rol);
+        if (request.getIdRolUsuario() != null) {
+            usuario.setRolUsuario(obtenerRol(request.getIdRolUsuario()));
+        }
 
         return uRepo.save(usuario);
     }
@@ -103,24 +103,51 @@ public class UsuarioService {
 
     private void actualizarDatos(Usuario usuario, UsuarioDTORequest request) {
 
-        Comuna comuna = obtenerComuna(request.getIdComuna());
-        validarRegionDeComuna(request.getIdRegion(), comuna);
+        Comuna comuna = usuario.getComuna();
+        if (request.getIdComuna() != null) {
+            comuna = obtenerComuna(request.getIdComuna());
+        }
+        if (request.getIdRegion() != null) {
+            if (comuna == null) {
+                throw new UsuarioInvalidaException(
+                        "Debe indicar una comuna para validar la región");
+            }
+            validarRegionDeComuna(request.getIdRegion(), comuna);
+        }
         Direccion direccion = request.getIdDireccion() == null
                 ? null
                 : direccionService.obtenerPorIdRequerida(request.getIdDireccion());
 
-        usuario.setNombres(request.getNombres());
-        usuario.setAPaterno(request.getAPaterno());
-        usuario.setAMaterno(request.getAMaterno());
-        usuario.setRut(request.getRut());
-        usuario.setDv(request.getDv() != null && !request.getDv().isBlank() ? request.getDv() : null);
-        usuario.setFechaNacimiento(request.getFechaNacimiento());
+        if (request.getNombres() != null) {
+            usuario.setNombres(request.getNombres());
+        }
+        if (request.getAPaterno() != null) {
+            usuario.setAPaterno(request.getAPaterno());
+        }
+        if (request.getAMaterno() != null) {
+            usuario.setAMaterno(request.getAMaterno());
+        }
+        if (request.getRut() != null) {
+            usuario.setRut(request.getRut());
+        }
+        if (request.getDv() != null) {
+            usuario.setDv(!request.getDv().isBlank() ? request.getDv() : null);
+        }
+        if (request.getFechaNacimiento() != null) {
+            usuario.setFechaNacimiento(request.getFechaNacimiento());
+        }
         if (direccion != null) {
             usuario.getDirecciones().add(direccion);
         }
-        usuario.setTelefono(request.getTelefono());
-        usuario.setCorreo(request.getCorreo());
-        usuario.setComuna(comuna);
+        if (request.getTelefono() != null) {
+            usuario.setTelefono(request.getTelefono());
+        }
+        if (request.getCorreo() != null) {
+            usuario.setCorreo(request.getCorreo());
+        }
+        if (request.getIdComuna() != null) {
+            usuario.setComuna(comuna);
+        }
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             usuario.setPassword(passwordEncoder.encode(request.getPassword()));

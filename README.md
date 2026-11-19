@@ -204,6 +204,8 @@ administración usan el mismo cuerpo más ese campo:
 
 Al editar, `password` es opcional: si viene vacía o nula, se conserva la anterior.
 `PUT /api/usuarios/perfil` nunca cambia el rol, aunque el cuerpo lo incluya.
+Los PUT de usuario aceptan actualizaciones parciales: los campos omitidos o
+nulos se conservan y se validan los valores no nulos enviados.
 
 **Respuesta del login:**
 

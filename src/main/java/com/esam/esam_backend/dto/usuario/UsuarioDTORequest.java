@@ -15,17 +15,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UsuarioDTORequest {
 
-    @NotBlank
+    public interface Creacion {}
+
+    @NotBlank(groups = Creacion.class)
+    @Pattern(regexp = ".*\\S.*")
     @Size(max = 100)
     private String nombre;
 
-    @NotBlank
     @Size(max = 100)
+    @NotBlank(groups = Creacion.class)
+    @Pattern(regexp = ".*\\S.*")
     private String apellido;
 
-    @NotBlank
     @Email
     @Size(max = 254)
+    @NotBlank(groups = Creacion.class)
+    @Pattern(regexp = ".*\\S.*")
     private String email;
 
     @Size(min = 8, max = 72)
@@ -34,12 +39,14 @@ public class UsuarioDTORequest {
     @Pattern(regexp = "^\\+?[0-9]{8,15}$")
     private String telefono;
 
-    @NotBlank
     @Size(max = 255)
+    @NotBlank(groups = Creacion.class)
+    @Pattern(regexp = ".*\\S.*")
     private String nombres;
 
-    @NotBlank
     @Size(max = 255)
+    @NotBlank(groups = Creacion.class)
+    @Pattern(regexp = ".*\\S.*")
     private String aPaterno;
 
     @Size(max = 255)
@@ -51,23 +58,24 @@ public class UsuarioDTORequest {
     @Size(max = 1)
     private String dv;
 
-    @NotNull
+    @NotNull(groups = Creacion.class)
     private LocalDate fechaNacimiento;
 
     @Size(max = 300)
     private String direccion;
 
-    @NotBlank
     @Email
     @Size(max = 100)
+    @NotBlank(groups = Creacion.class)
+    @Pattern(regexp = ".*\\S.*")
     private String correo;
 
-    @NotNull
     @Min(value = 1)
+    @NotNull(groups = Creacion.class)
     private Long idRegion;
 
-    @NotNull
     @Min(value = 1)
+    @NotNull(groups = Creacion.class)
     private Long idComuna;
 
     @Min(value = 1)

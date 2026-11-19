@@ -83,7 +83,13 @@ public class Usuario{
         return nombres != null && !nombres.isBlank()
                 && aPaterno != null && !aPaterno.isBlank()
                 && fechaNacimiento != null
-                && correo != null && !correo.isBlank()
-                && comuna != null;
+                && correo != null && !correo.isBlank();
+    }
+
+    public boolean tieneDatosMinimosParaComprar() {
+        return nombres != null && !nombres.isBlank()
+                && aPaterno != null && !aPaterno.isBlank()
+                && fechaNacimiento != null
+                && correo != null && !correo.isBlank();
     }
 }

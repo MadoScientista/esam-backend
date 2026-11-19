@@ -15,8 +15,9 @@ Decisiones para orientar la implementación:
 - Se vincula una cuenta existente solo cuando el ID token es válido y su correo
   está verificado por Google.
 - Si no existe una cuenta con ese correo, se crea una cuenta local con rol
-  `cliente` y perfil incompleto. El usuario debe completar los datos requeridos
-  antes de poder comprar.
+  `cliente` y perfil incompleto. Para comprar, el usuario debe estar
+  autenticado y tener nombres, apellido paterno, correo y fecha de nacimiento;
+  no se exige comuna ni completar los demás datos del perfil.
 - El JWT propio de la API sigue siendo el mecanismo de acceso a los endpoints
   protegidos. El ID token de Google no se usa como JWT de la API.
 
@@ -35,9 +36,9 @@ Decisiones para orientar la implementación:
    (`UsuarioDTOLoginResponse`), devolviendo el usuario local y el JWT propio.
    El frontend envía ese JWT en el encabezado `Authorization` en las
    siguientes solicitudes.
-7. El usuario nuevo puede autenticarse y completar el perfil. La API debe
-   impedir crear pedidos hasta que estén completos los datos que hoy exige el
-   registro.
+7. El usuario nuevo puede autenticarse y completar el perfil. La API permite
+   crear pedidos cuando están presentes nombres, apellido paterno, correo y
+   fecha de nacimiento, aunque falten otros datos del perfil.
 
 ## Componentes
 
@@ -80,15 +81,17 @@ Decisiones para orientar la implementación:
 
 ### 4. Onboarding y permisos
 
-- El perfil se completa con `PUT /api/usuarios/perfil`, sin exigir una
-  contraseña local para cuentas OAuth.
+- El perfil se actualiza parcialmente con `PUT /api/usuarios/perfil`, sin
+  exigir una contraseña local para cuentas OAuth. Solo se modifican los campos
+  no nulos enviados y se validan esos valores.
 - La respuesta del perfil admite comuna ausente hasta completar el onboarding.
 - `perfilCompleto` refleja que estén presentes nombres, apellido paterno, fecha
-  de nacimiento, correo y comuna. El RUT y su dígito verificador no son
+  de nacimiento y correo. La comuna, el RUT y su dígito verificador no son
   requisitos para considerar completo el perfil.
-- Proteger la creación de pedidos para que un perfil incompleto no pueda
-  comprar; mantener disponibles el catálogo, autenticación y operaciones
-  necesarias para completar el perfil.
+- Permitir crear pedidos a usuarios autenticados que tengan nombres, apellido
+  paterno, fecha de nacimiento y correo; `perfilCompleto` debe ser `true` para
+  ese conjunto de datos, aunque la comuna esté ausente. Mantener disponibles
+  las operaciones necesarias para completar el perfil.
 - Asignar siempre el rol `cliente` al alta pública. Los atributos y roles
   devueltos por Google nunca determinan permisos locales.
 

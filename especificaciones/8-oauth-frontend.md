@@ -117,23 +117,24 @@ guardar el ID token de Google como sesión de la aplicación.
   de Google solo pueden completar `nombres` y `aPaterno` cuando caben en el
   límite del modelo; el frontend debe permitir revisarlos y completarlos.
 - Consultar `usuario.perfilCompleto` en la respuesta de login o perfil. Si es
-  `false`, dirigir al usuario al formulario de completar perfil.
-- La cuenta puede navegar y autenticarse con perfil incompleto, pero la API
-  rechaza la creación de pedidos hasta que estén completos los campos
-  requeridos: nombres, apellido paterno, fecha de nacimiento, correo y comuna.
-  El RUT y su dígito verificador no son necesarios para completar el perfil.
+  `false`, ofrecer completar los datos mínimos; el checkout requiere que estén
+  presentes los cuatro datos reflejados por este campo.
+- La cuenta puede comprar si está autenticada y `perfilCompleto` es `true`,
+  aunque no tenga comuna. El backend verifica estos datos desde el perfil; no
+  deben enviarse en la solicitud del pedido.
 - Para completar o actualizar el perfil, usar `PUT /api/usuarios/perfil` con
-  el JWT propio. El contrato de `UsuarioDTORequest`, sus campos requeridos y
-  las validaciones están descritos en [4-dtos.md](./4-dtos.md#cliente-perfil-direcciones-carrito-y-pedidos).
-  Para una cuenta de Google, `password` puede omitirse. Al enviar el formulario,
-  incluir los campos obligatorios del DTO aunque el flujo OAuth no haya
-  requerido contraseña.
+  el JWT propio. Es una actualización parcial: enviar solo los campos que se
+  desean modificar; los omitidos o nulos se conservan. El contrato de
+  `UsuarioDTORequest` y sus validaciones están descritos en
+  [4-dtos.md](./4-dtos.md#cliente-perfil-direcciones-carrito-y-pedidos). Para
+  una cuenta de Google, `password` puede omitirse.
 - Después de guardar el perfil, volver a consultar `GET /api/usuarios/perfil`
   y usar el nuevo `perfilCompleto` como fuente de verdad.
 
-La respuesta al intentar crear un pedido con el perfil incompleto es `409
-Conflict`, con el código `PERFIL_INCOMPLETO`. Mostrar el formulario de perfil
-en lugar de reintentar el pedido sin cambios.
+Si falta alguno de los cuatro datos mínimos para comprar, la respuesta es
+`409 Conflict`, con el código `PERFIL_INCOMPLETO`. Pedir al usuario completar
+los datos faltantes en su perfil; no agregarlos al cuerpo de la solicitud del
+pedido.
 
 ## Errores que debe manejar el frontend
 

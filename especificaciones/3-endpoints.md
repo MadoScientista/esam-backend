@@ -85,7 +85,7 @@ asociado al token.
 | Método | Endpoint | Acceso |
 |---|---|---|
 | `GET` | `/api/usuarios/perfil` | Autenticado; devuelve el perfil propio. |
-| `PUT` | `/api/usuarios/perfil` | Autenticado; actualiza el perfil propio, no el rol. |
+| `PUT` | `/api/usuarios/perfil` | Autenticado; actualiza solo los campos enviados del perfil propio, no el rol. |
 | `GET` | `/api/direcciones` | Autenticado; lista las direcciones propias. |
 | `GET` | `/api/direcciones/usuario/{idUsuario}` | Autenticado; el ID debe ser el del usuario autenticado. |
 | `GET` | `/api/direcciones/usuario/{idUsuario}/activas` | Autenticado; solo direcciones activas propias. |

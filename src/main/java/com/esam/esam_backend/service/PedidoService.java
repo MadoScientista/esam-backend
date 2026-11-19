@@ -57,7 +57,7 @@ public class PedidoService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNoEncontradaException(
                         "No existe un usuario con id " + idUsuario));
-        if (!usuario.esPerfilCompleto()) {
+        if (!usuario.tieneDatosMinimosParaComprar()) {
             throw new PerfilIncompletoException();
         }
         Direccion direccion = null;

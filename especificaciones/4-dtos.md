@@ -225,7 +225,9 @@ La respuesta `200 OK` usa el mismo formato de login y entrega un JWT propio de
 la API; el ID token de Google no sirve para acceder a las rutas protegidas. Si
 el correo verificado ya corresponde a una cuenta local, se vincula esa cuenta.
 Si no existe, se crea una cuenta con rol `cliente` y `perfilCompleto: false`.
-Un usuario nuevo debe completar el perfil antes de crear pedidos.
+Para crear pedidos debe estar autenticado y tener nombres, apellido paterno,
+correo y fecha de nacimiento. `perfilCompleto` refleja la presencia de esos
+cuatro datos; no se requiere una comuna para comprar.
 
 El backend valida la firma, emisor, audiencia, expiración y correo verificado.
 Token inválido, correo no verificado o cuenta inactiva responde `401` con el
@@ -246,9 +248,11 @@ Authorization: Bearer <JWT>
 ```
 
 Actualizar perfil usa `PUT /api/usuarios/perfil` y un cuerpo `UsuarioDTORequest`.
-`password` es opcional al actualizar el perfil; si se envía, debe tener entre
-8 y 72 caracteres y se guarda codificada. No se requiere contraseña para
-completar el perfil de una cuenta creada con Google.
+Es una actualización parcial: solo se modifican los campos enviados y los
+omitidos o nulos se conservan. Se validan los valores no nulos enviados, pero
+no se exige que el cuerpo contenga el perfil completo. `password` es opcional;
+si se envía, debe tener entre 8 y 72 caracteres y se guarda codificada. No se
+requiere contraseña para actualizar el perfil de una cuenta creada con Google.
 
 ```json
 {
@@ -389,7 +393,11 @@ resta `stock - stockReservado`.
 ### Crear pedido e historial propio
 
 El pedido se crea siempre a partir del carrito persistido en el backend: el
-cuerpo de la solicitud no lleva ítems ni totales, solo la modalidad de entrega.
+cuerpo de la solicitud no lleva ítems, totales ni datos del perfil, solo la
+modalidad de entrega. El usuario debe estar autenticado y el backend comprueba
+internamente que tenga nombres, apellido paterno, correo y fecha de nacimiento.
+`perfilCompleto` indica si están presentes esos cuatro datos; no se requiere
+una comuna registrada.
 
 Campos del cuerpo (`PedidoDTORequest`):
 
@@ -405,6 +413,7 @@ Errores posibles al crear:
 | `400` | `ERROR_VALIDACION` | Falta `tipoEntrega` o el valor no es un `TipoEntrega` válido. |
 | `400` | `PEDIDO_INVALIDO` | `DESPACHO` sin `idDireccion`; el usuario no tiene carrito; el carrito está vacío; o un producto del carrito ya no está activo. |
 | `404` | `DIRECCION_NO_ENCONTRADA` | `idDireccion` inexistente, inactiva o que no pertenece al usuario del token. |
+| `409` | `PERFIL_INCOMPLETO` | Al usuario autenticado le falta alguno de los cuatro datos mínimos requeridos para comprar. |
 | `409` | `CONFLICTO_STOCK` | No alcanza el stock disponible de uno de los productos. |
 
 ```http

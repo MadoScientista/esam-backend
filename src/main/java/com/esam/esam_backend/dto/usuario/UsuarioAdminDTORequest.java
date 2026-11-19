@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UsuarioAdminDTORequest extends UsuarioDTORequest {
 
-    @NotNull
+    @NotNull(groups = Creacion.class)
     @Min(value = 1)
     private Long idRolUsuario;
 

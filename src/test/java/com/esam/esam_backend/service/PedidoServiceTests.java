@@ -372,11 +372,12 @@ class PedidoServiceTests {
     }
 
     @Test
-    void crearPedidoPermiteUsuarioSinRut() {
+    void crearPedidoPermiteUsuarioConDatosMinimosSinComuna() {
         Usuario usuario = usuarioCompleto();
         usuario.setIdUsuario(7L);
         usuario.setRut(null);
         usuario.setDv(null);
+        usuario.setComuna(null);
 
         PedidoDTORequest request = new PedidoDTORequest();
         request.setTipoEntrega(TipoEntrega.RETIRA_TIENDA);
